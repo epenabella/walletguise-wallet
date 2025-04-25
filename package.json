@@ -5,11 +5,14 @@
   "description": "Wallet Guise - preloaded wallets",
   "author": "WalletGuise",
   "scripts": {
+    "tailwind": "npx @tailwindcss/cli -i ./input.css -o ./style.css --watch\n",
     "dev": "plasmo dev",
     "build": "plasmo build",
     "package": "plasmo package"
   },
   "dependencies": {
+    "@tailwindcss/cli": "^4.1.4",
+    "@tailwindcss/postcss": "^4.1.4",
     "plasmo": "0.90.3",
     "svelte": "4.2.19"
   },
@@ -17,10 +20,9 @@
     "@ianvs/prettier-plugin-sort-imports": "4.1.1",
     "@types/chrome": "0.0.258",
     "@types/node": "20.11.5",
-    "@types/react": "18.2.48",
-    "@types/react-dom": "18.2.18",
     "prettier": "3.2.4",
     "svelte-preprocess": "^6.0.3",
+    "tailwindcss": "^4.1.4",
     "typescript": "5.3.3"
   },
   "manifest": {

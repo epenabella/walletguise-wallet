@@ -1,4 +1,5 @@
 <script lang="ts">
+    import './style.css';
     export let count = 0
     let action: string = null
     function increment() {
@@ -15,7 +16,7 @@
     <h2 class="text-center">
         Welcome to your <a href="https://www.plasmo.com" target="_blank">Plasmo</a> Extension!
     </h2>
-    <div class="container">
+    <div class="container min-w-[470px] flex place-content-center gap-[47px]">
         <button on:click={decrement}>-</button>
         <p>Current count: <b>{count}</b></p>
         <button on:click={increment}>+</button>
@@ -25,13 +26,13 @@
 </div>
 
 <style>
-    .container {
-        min-width: 470px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 47px;
-    }
+    /*.container {*/
+    /*    min-width: 470px;*/
+    /*    display: flex;*/
+    /*    align-items: center;*/
+    /*    justify-content: center;*/
+    /*    gap: 47px;*/
+    /*}*/
     .action {
         color: #470;
         font-weight: bold;
