@@ -13,6 +13,7 @@
   "dependencies": {
     "@tailwindcss/cli": "^4.1.4",
     "@tailwindcss/postcss": "^4.1.4",
+    "flowbite": "^3.1.2",
     "plasmo": "0.90.3",
     "svelte": "4.2.19"
   },
