@@ -1,0 +1,38 @@
+// async function restoreFromBlob() {
+//   try {
+//     const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)       // decrypt here
+//     sessionWallet = enc
+//       ? Keypair.fromSecretKey(bs58.decode(enc))
+//       : null
+//   } catch {
+//     sessionWallet = null          // passwordKey wasn’t set yet
+//   }
+// }
+
+// async function restoreSession() {
+//   if (sessionWallet) return
+//   const raw = await sessionSecureStorage.get<string>(SESSION_KEY)
+//   if (raw) sessionWallet = Keypair.fromSecretKey(bs58.decode(raw))
+// }
+
+// export async function unlock(password: string): Promise<boolean> {
+//   if ((await sha256(password)) !== (await secureStore.get<string>(STORAGE_KEYS.HASH)))
+//     return false                                          // wrong password
+//
+//   await secureStore.setPassword(password)                 // prime crypto key
+//   const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)   // still encrypted
+//   const kp  = Keypair.fromSecretKey(bs58.decode(enc))
+//
+//   await sessionSecureStorage.set(SESSION_KEY, bs58.encode(kp.secretKey)) // survive reload
+//   return true
+// }
+
+// async function getSession(): Promise<Keypair|null> {
+//   const cached = await storage.get<string>(SESSION_KEY); // ← chrome.storage.session
+//   return cached ? Keypair.fromSecretKey(bs58.decode(cached)) : null;
+// }
+//
+// async function setSession(kp: Keypair|null) {
+//   if (kp) await storage.set(SESSION_KEY, bs58.encode(kp.secretKey));
+//   else      await storage.remove(SESSION_KEY);
+// }
