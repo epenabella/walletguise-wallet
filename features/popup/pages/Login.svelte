@@ -3,13 +3,13 @@
     import { Keypair } from "@solana/web3.js";
     import {createEventDispatcher, onMount} from "svelte";
     import { saveNewWallet } from "~shared/utils/wallet"
-    import { STORAGE_KEYS } from "~shared/utils/secureStore"
+    import { STORAGE_KEYS, secureStore } from "~shared/utils/secureStore"
     import bs58 from "bs58"
-    import { sha256 } from "~shared/utils/crypto"
+    import { importFromMnemonic, sha256 } from "~shared/utils/crypto"
     import type { SecureStorage } from "@plasmohq/storage/secure"
 
-    export let secure: SecureStorage
-
+    // export let secure: SecureStorage
+    export let kp: Keypair | null = null;
     const dispatch = createEventDispatcher();
     let password = "";
     let hasWallet = false
@@ -18,32 +18,30 @@
     let mode: "create" | "unlock";
     $: mode = hasWallet ? "unlock" : "create"        // "create" | "unlock"
 
-    // secure.get<string>(STORAGE_KEYS.HASH).then(h => {
+    // secureStore.get<string>(STORAGE_KEYS.HASH).then(h => {
     //     hasWallet = !!h
     //     if (hasWallet) {
     //          alert('has wallet login');
     //     }
     // });
 
-    chrome.storage.local.get(null, items => {
+    // chrome.storage.local.get(null, items => {
+    //     Object.keys(items).forEach(key => {
+    //         const maybeHashKey = key.split('|').at(-1);
+    //         if (maybeHashKey !== STORAGE_KEYS.HASH) return;
+    //         const walletKey = key.replace(STORAGE_KEYS.HASH, STORAGE_KEYS.ENC_WALLET);
+    //         // const enc = items[walletKey];
+    //         if (items[walletKey]) {
+    //             hasWallet = !!items[walletKey];
+    //         }
+    //     })
+    // })
+
+    chrome.storage.session.get(null, items => {
         Object.keys(items).forEach(key => {
-            console.log(`${key}: ${items[key]}`);
-            const maybeHashKey = key.split('|').at(-1);
-            if (maybeHashKey !== STORAGE_KEYS.HASH) return;
-            const walletKey = key.replace(STORAGE_KEYS.HASH, STORAGE_KEYS.ENC_WALLET);
-            const enc = items[walletKey];
-
-            if (enc) {
-                hasWallet = !!enc;
+            if (key === "wg_session_wallet") {
+                hasWallet = true;
             }
-
-            // console.log(`try restore enc:\n${enc}`)
-            //
-            // kp = Keypair.fromSecretKey(bs58.decode(enc));
-
-            // if (kp) {
-            //     console.log('restored on outset')
-            // }
         })
     })
 
@@ -52,38 +50,57 @@
         // e.preventDefault();
 
         if (!password) return;
-        let kp = null;
+        let tempKp: Keypair | null = null;
         if (mode === "create") {
             // const hash = await sha256(password);
             // await storage.set(storage.STORAGE_KEYS.HASH, hash);
-            kp = Keypair.generate();
-            await secure.setPassword(password)
-            await secure.set(STORAGE_KEYS.ENC_WALLET, bs58.encode(kp.secretKey))
-            console.log('created kp: ' + kp.publicKey)
+            const input = prompt("Please enter seed phrase", '');
 
-            await secure.set(STORAGE_KEYS.HASH, await sha256(password))
+            tempKp = input ? importFromMnemonic(input).keypair : Keypair.generate();
+
+            await secureStore.setPassword(password)
+            await secureStore.set(STORAGE_KEYS.ENC_WALLET, bs58.encode(tempKp.secretKey))
+            console.log('created kp: ' + tempKp.publicKey)
+
+            await secureStore.set(STORAGE_KEYS.HASH, await sha256(password))
             hasWallet = true;
             // dispatch("success");
         } else {
             // ------- unlock ----------
-            await secure.setPassword(password)
+            await secureStore.setPassword(password)
             // prime AES key
-            const enc = await secure.get<string>(STORAGE_KEYS.ENC_WALLET)
+            const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)
             console.log('unlock enc: ' + enc.toLowerCase())
 
             if (!enc) return alert("Stored wallet not found")
 
-            kp = Keypair.fromSecretKey(bs58.decode(enc))
-            console.log('unlock kp: ' + kp.publicKey)
-            await secure.set(STORAGE_KEYS.ENC_WALLET, enc)
+            tempKp = Keypair.fromSecretKey(bs58.decode(enc))
+            console.log('unlock kp: ' + tempKp.publicKey)
+            await secureStore.set(STORAGE_KEYS.ENC_WALLET, enc)
             hasWallet = true;
             // dispatch("success")
         }
 
         await chrome.storage.session.set({
-            wg_session_wallet: bs58.encode(kp.secretKey)
+            wg_session_wallet: bs58.encode(tempKp.secretKey)
         })
-        dispatch("success");
+
+        chrome.runtime.sendMessage({ type: "walletguise#unlock", password }).then(r => {
+            console.log('unlock then(): ' + JSON.stringify(r))
+
+            console.log('unlock res: ' + JSON.stringify(r));
+
+            if (tempKp) {
+                kp = tempKp;
+            }
+
+            dispatch("success");
+
+        }).catch(e => {
+            console.log('unlock error: ' + JSON.stringify(e))
+        });
+
+
     };
 
     // onMount(() => {

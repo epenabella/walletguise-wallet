@@ -2,6 +2,10 @@
   import { onMount } from "svelte"
   import { writable } from "svelte/store"
   import { Button, Input } from "flowbite-svelte"
+  import { Keypair } from "@solana/web3.js"
+
+  export let kp: Keypair;
+
 
   const lamportsStore = writable<number | null>(null)
   const loading = writable(true)
@@ -9,14 +13,23 @@
 
   async function fetchBalance() {
     try {
+
+      console.log('balance kp public key: ' + kp.publicKey.toString())
+
       const { lamports, error } = await chrome.runtime.sendMessage({
-        type: "walletguise#getBalance"
+        type: "walletguise#getBalance",
+        publicKey: kp.publicKey.toString()
       })
       if (error === ERROR_LOCKED) {
         // User was logged out in another popup tab – force reload to Login
+        console.log('LOCKED!!!!');
         location.reload()
         return
       }
+
+      console.log('fetch balance: ' + lamports);
+      // console.log('fetch balance publicKey: ' + publicKey);
+
       lamportsStore.set(lamports)
     } finally {
       loading.set(false)

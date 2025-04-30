@@ -9,25 +9,31 @@
     import { Keypair } from "@solana/web3.js"
     import bs58 from "bs58"
     import { SecureStorage } from "@plasmohq/storage/secure"
-    import { STORAGE_KEYS } from "~shared/utils/secureStore"
+    import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
 
     /* ---------- secure-storage setup ---------- */
-    const secure      = new SecureStorage({ area: "local" })
+    // const secure      = new SecureStorage({ area: "local" })
 
-    let kp: Keypair | null = null          // current decrypted key-pair
+    let kp: Keypair | null = null
+    $: {
+        console.log('kp changed: ' + JSON.stringify(kp?.publicKey))
+    }
+    // current decrypted key-pair
     let showQr = false
 
-    chrome.storage.session.get("wg_session_wallet", async (obj) => {
-        console.log('session obj: ' + JSON.stringify(obj))
-        if (obj.wg_session_wallet) {
-            kp = Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet))
 
-            await chrome.runtime.sendMessage({
-                type: "walletguise#restore",
-                secretKey: obj.wg_session_wallet        // same base-58 string
-            })
-        }
-    })
+
+    // chrome.storage.session.get("wg_session_wallet", async (obj) => {
+    //     console.log('session obj: ' + JSON.stringify(obj))
+    //     if (obj.wg_session_wallet) {
+    //         kp = Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet))
+    //
+    //         await chrome.runtime.sendMessage({
+    //             type: "walletguise#restore",
+    //             secretKey: obj.wg_session_wallet        // same base-58 string
+    //         })
+    //     }
+    // })
 
     //session obj:
     // {"wg_session_wallet":"XqXHArJz95D8Vi36LUiFSkxRMnR5MiuEV4XuUmGZhkLCwy9CoN8PKMjVHRVGm4jVQC5mi7kUqjVpDZW58RDUQbx"}
@@ -53,10 +59,10 @@
     // })
 
 
-    // secure.get<string>(STORAGE_KEYS.HASH).then(async h => {
+    // secureStore.get<string>(STORAGE_KEYS.HASH).then(async h => {
     //     console.log('h: ' + h);
     //     if (h) {
-    //         const enc = await secure.get<string>(STORAGE_KEYS.ENC_WALLET)
+    //         const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)
     //         kp = Keypair.fromSecretKey(bs58.decode(enc))
     //
     //         if (kp) {
@@ -72,6 +78,8 @@
         const storageKey = Object.keys(c)[0];
         const secureKey = storageKey.split('|').at(-1);
 
+        if (!storageKey || !secureKey) return;
+
         console.log('storageKey: ' + storageKey);
         console.log('secureKey: ' + secureKey);
 
@@ -79,7 +87,7 @@
 
         try {
             // This call *decrypts* because setPassword() was done in Login
-            secure.get<string>(STORAGE_KEYS.ENC_WALLET).then(enc => {
+            secureStore.get<string>(STORAGE_KEYS.ENC_WALLET).then(enc => {
                 kp  = enc
                   ? Keypair.fromSecretKey(bs58.decode(enc))  // enc is now base-58
                   : null
@@ -92,24 +100,16 @@
             // Happens on first popup load before user typed password
             console.log("Password not set yet – waiting for unlock")
         }
-
-        // if (secureKey === STORAGE_KEYS.ENC_WALLET) {
-        //     const val = c[storageKey]
-        //     console.log("val:")
-        //     console.log(val)
-        //     const enc = val.newValue
-        //     kp = enc ? Keypair.fromSecretKey(bs58.decode(enc)) : null
-        //     console.log("kp: " + kp.publicKey)
-        // }
-        // console.log("changed c + a:\n" + JSON.stringify(c) + "\na " + JSON.stringify(a))
     })
 
-    // secure.watch({
+
+
+    // secureStore.watch({
     //     "walletguise_encrypted_wallet": (a,b) => {
     //         try {
     //             console.debug('secure watch:' + JSON.stringify(b))
     //             alert('kp watch: ' + kp.publicKey)
-    //             secure.get<string>(STORAGE_KEYS.ENC_WALLET).then(enc => {
+    //             secureStore.get<string>(STORAGE_KEYS.ENC_WALLET).then(enc => {
     //                 kp = enc ? Keypair.fromSecretKey(bs58.decode(enc)) : null
     //             })   // auto-decrypts
     //
@@ -124,14 +124,14 @@
     /** called by Login.svelte once it has a decrypted Keypair */
     // async function setKeypair(k: Keypair) {
     //     kp = k
-    //     await secure.set(ENC_WALLET, bs58.encode(k.secretKey))       // encrypt + store
+    //     await secureStore.set(ENC_WALLET, bs58.encode(k.secretKey))       // encrypt + store
     // }
 
 
 </script>
 <div>
-    {#if kp === null}
-        <Login {secure} />
+    {#if !kp}
+        <Login bind:kp={kp}/>
     {:else}
         <Balance {kp}/>
 <!--        <button class="mt-4 mx-auto block px-4 py-2 bg-purple-600 text-white rounded" on:click={() => (showQr = true)}>-->

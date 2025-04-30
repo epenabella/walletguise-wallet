@@ -1,14 +1,16 @@
 // import * as storage from "~shared/utils/secureStore";
 import { decrypt, sha256 } from "~shared/utils/crypto"
 import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
-import { Keypair, Transaction } from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction } from "@solana/web3.js"
 import bs58 from 'bs58';
 import { connectionStore } from "~shared/utils/network";
 import { get } from "svelte/store"
-const connection = get(connectionStore);
 import * as sess from "@plasmohq/storage"
+import { publicKey } from "@solana/web3.js/src/layout"
+import { SecureStorage } from "@plasmohq/storage/secure"
+const connection = get(connectionStore);
 // RAM-only store
-const session = new sess.Storage({ area: "session" }) // survives SW restarts
+// const sessionSecureStorage = new SecureStorage({area: 'session'}) //sess.Storage({ area: "session" }) // survives SW restarts
 const SESSION_KEY = "wg_session_wallet";      // NEW
 let sessionWallet: Keypair | null = null
 
@@ -23,23 +25,31 @@ let sessionWallet: Keypair | null = null
 //   }
 // }
 
+// async function restoreSession() {
+//   if (sessionWallet) return
+//   const raw = await sessionSecureStorage.get<string>(SESSION_KEY)
+//   if (raw) sessionWallet = Keypair.fromSecretKey(bs58.decode(raw))
+// }
+
 async function restoreSession() {
   if (sessionWallet) return
-  const raw = await session.get<string>(SESSION_KEY)
-  if (raw) sessionWallet = Keypair.fromSecretKey(bs58.decode(raw))
+  const { wg_session_wallet } = await chrome.storage.session.get(SESSION_KEY)
+  if (wg_session_wallet) {
+    sessionWallet = Keypair.fromSecretKey(bs58.decode(wg_session_wallet))
+  }
 }
 
-export async function unlock(password: string): Promise<boolean> {
-  if ((await sha256(password)) !== (await secureStore.get<string>(STORAGE_KEYS.HASH)))
-    return false                                          // wrong password
-
-  await secureStore.setPassword(password)                 // prime crypto key
-  const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)   // still encrypted
-  const kp  = Keypair.fromSecretKey(bs58.decode(enc))
-
-  await session.set(SESSION_KEY, bs58.encode(kp.secretKey)) // survive reload
-  return true
-}
+// export async function unlock(password: string): Promise<boolean> {
+//   if ((await sha256(password)) !== (await secureStore.get<string>(STORAGE_KEYS.HASH)))
+//     return false                                          // wrong password
+//
+//   await secureStore.setPassword(password)                 // prime crypto key
+//   const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)   // still encrypted
+//   const kp  = Keypair.fromSecretKey(bs58.decode(enc))
+//
+//   await sessionSecureStorage.set(SESSION_KEY, bs58.encode(kp.secretKey)) // survive reload
+//   return true
+// }
 
 // async function getSession(): Promise<Keypair|null> {
 //   const cached = await storage.get<string>(SESSION_KEY); // ← chrome.storage.session
@@ -70,14 +80,19 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         sessionWallet = Keypair.fromSecretKey(bs58.decode(secretKey))
         return sendResponse({ ok: true })
       }
-      // case "walletguise#unlock": {
-      //   await restoreFromBlob();
-      //   const enc = await storage.get<string>(STORAGE_KEYS.ENC_WALLET)
-      //   if (!enc) return sendResponse({ error: "no wallet" })
-      //   sessionWallet = Keypair.fromSecretKey(await decrypt(enc, msg.password))
-      //   sendResponse({ ok: true })
-      //   break
-      // }
+      case "walletguise#unlock": {
+        if ((await sha256(msg.password)) !== (await secureStore.get<string>(STORAGE_KEYS.HASH)))
+          return false                                          // wrong password
+
+        await secureStore.setPassword(msg.password)                 // prime crypto key
+
+        const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)
+        if (!enc) return sendResponse({ error: "no wallet" })
+        sessionWallet = Keypair.fromSecretKey(await decrypt(enc, msg.password))
+        await chrome.storage.session.set({[SESSION_KEY]: bs58.encode(sessionWallet.secretKey) })
+        sendResponse({ ok: true })
+        break
+      }
       case "walletguise#connect": {
         // await restoreFromBlob();
         if (!sessionWallet) return sendResponse({ error: "locked" })
@@ -107,11 +122,17 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       }
       case "walletguise#getBalance": {
         // await restoreFromBlob();
+        await restoreSession();
         if (!sessionWallet) return sendResponse({ error: "locked" })
+          // TODO:// use session!
+          // sessionWallet.publicKey,
+        // const pk = new PublicKey(sessionWallet.publicKey)      // ← convert
+
         const lamports = await connection.getBalance(
-          sessionWallet.publicKey,
+          sessionWallet.publicKey,          // ← use the cached PublicKey
           "confirmed"
         )
+
         sendResponse({ lamports })        // <— return raw lamports
         break
       }
