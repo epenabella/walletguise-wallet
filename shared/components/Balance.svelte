@@ -4,21 +4,14 @@
   import { Button, Input } from "flowbite-svelte"
   import { Keypair } from "@solana/web3.js"
 
-  export let kp: Keypair;
-
-
   const lamportsStore = writable<number | null>(null)
   const loading = writable(true)
   const ERROR_LOCKED = "locked"
 
   async function fetchBalance() {
     try {
-
-      console.log('balance kp public key: ' + kp.publicKey.toString())
-
       const { lamports, error } = await chrome.runtime.sendMessage({
-        type: "walletguise#getBalance",
-        publicKey: kp.publicKey.toString()
+        type: "walletguise#getBalance"
       })
       if (error === ERROR_LOCKED) {
         // User was logged out in another popup tab – force reload to Login

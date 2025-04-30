@@ -1,4 +1,5 @@
 import { generateMnemonic, mnemonicToSeedSync, validateMnemonic } from '@scure/bip39';
+import { derivePath } from "ed25519-hd-key"   // tiny lib, Phantom uses it
 import { Keypair } from "@solana/web3.js"
 import { wordlist } from '@scure/bip39/wordlists/english';
 
@@ -50,9 +51,21 @@ export async function decrypt(cipherText: string, password: string): Promise<Uin
     return new Uint8Array(plain);
 }
 
-export function importFromMnemonic(mnemonic: string): { keypair: Keypair } {
+export function importFromMnemonic(mnemonic: string, account = 0): { keypair: Keypair } {
   if (!validateMnemonic(mnemonic, wordlist)) throw new Error("Invalid phrase");
-  const seed = mnemonicToSeedSync(mnemonic.trim(), "");   // no pass-phrase
-  const keypair = Keypair.fromSeed(seed.slice(0, 32));
+  const seed = mnemonicToSeedSync(mnemonic.trim(), "");
+  const path = `m/44'/501'/${account}'/0'`   // ← add /0'   // Solflare path
+
+  const hexString = Buffer.from(seed).toString('hex');
+  const { key } = derivePath(path, hexString);
+
+  const keypair = Keypair.fromSeed(key)
+
+  console.log('keypair imported public: ', keypair.publicKey.toString());
+  console.log('keypair imported private: ', keypair.secretKey.toString());
+
   return { keypair };
 }
+
+// no pass-phrase
+//const keypair = Keypair.fromSeed(seed.slice(0, 32));

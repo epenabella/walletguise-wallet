@@ -23,17 +23,17 @@
 
 
 
-    // chrome.storage.session.get("wg_session_wallet", async (obj) => {
-    //     console.log('session obj: ' + JSON.stringify(obj))
-    //     if (obj.wg_session_wallet) {
-    //         kp = Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet))
-    //
-    //         await chrome.runtime.sendMessage({
-    //             type: "walletguise#restore",
-    //             secretKey: obj.wg_session_wallet        // same base-58 string
-    //         })
-    //     }
-    // })
+    chrome.storage.session.get("wg_session_wallet", async (obj) => {
+        console.log('session obj: ' + JSON.stringify(obj))
+        if (obj.wg_session_wallet) {
+            kp = Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet))
+
+            await chrome.runtime.sendMessage({
+                type: "walletguise#restore",
+                secretKey: obj.wg_session_wallet        // same base-58 string
+            })
+        }
+    })
 
     //session obj:
     // {"wg_session_wallet":"XqXHArJz95D8Vi36LUiFSkxRMnR5MiuEV4XuUmGZhkLCwy9CoN8PKMjVHRVGm4jVQC5mi7kUqjVpDZW58RDUQbx"}
