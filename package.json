@@ -5,17 +5,23 @@
   "description": "Wallet Guise - preloaded wallets",
   "author": "WalletGuise",
   "scripts": {
-    "tailwind": "npx @tailwindcss/cli -i ./input.css -o ./style.css --watch\n",
+    "tailwind": "npx @tailwindcss/cli -i ./input.css -o ./assets/style.css --watch\n",
     "dev": "plasmo dev",
     "build": "plasmo build",
     "package": "plasmo package"
   },
   "dependencies": {
+    "@plasmohq/storage": "^1.15.0",
     "@scure/bip39": "^1.6.0",
+    "@solana/web3.js": "^1.98.2",
     "@tailwindcss/cli": "^4.1.4",
     "@tailwindcss/postcss": "^4.1.4",
+    "@types/qrcode": "^1.5.5",
+    "bs58": "^6.0.0",
     "flowbite": "^3.1.2",
+    "flowbite-svelte": "^0.48.6",
     "plasmo": "0.90.3",
+    "qrcode": "^1.5.4",
     "svelte": "4.2.19"
   },
   "devDependencies": {
@@ -28,8 +34,18 @@
     "typescript": "5.3.3"
   },
   "manifest": {
+    "name": "WalletGuise",
+    "description": "A lightweight Solana wallet built with Svelte + Plasmo",
     "host_permissions": [
       "https://*/*"
-    ]
+    ],
+    "permissions": [
+      "storage",
+      "scripting"
+    ],
+    "action": {
+      "default_title": "WalletGuise",
+      "default_popup": "popup.html"
+    }
   }
 }

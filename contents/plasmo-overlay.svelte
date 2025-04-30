@@ -11,9 +11,16 @@
         style.textContent = cssText
         return style
     }
+
+
+
+    // onMount(() => {
+    //   // debugger;
+    //   // console.log(`debugger???`)
+    // })
 </script>
 
-<span class="hw-top">Every living thing wants to survive</span>
+<span class="hw-top">Every living thing wants to survivessss</span>
 
 <style>
     .hw-top {
