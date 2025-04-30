@@ -1,18 +1,12 @@
 <script lang="ts">
-    import "./style.css";            // Tailwind base
-    import Login from "./features/popup/pages/Login.svelte";
-    import Balance from "./shared/components/Balance.svelte";
-    import QrModal from "./features/popup/pages/QrModal.svelte";
-    import { onMount } from "svelte";
-    import { writable } from "svelte/store"
-    import * as sess from "@plasmohq/storage"
+    import "~assets/style.css" // Tailwind base
+    import Login from "~features/popup/pages/Login.svelte";
+    import Balance from "~shared/components/Balance.svelte";
     import { Keypair } from "@solana/web3.js"
     import bs58 from "bs58"
-    import { SecureStorage } from "@plasmohq/storage/secure"
     import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
 
     /* ---------- secure-storage setup ---------- */
-    // const secure      = new SecureStorage({ area: "local" })
 
     let kp: Keypair | null = null
     $: {
@@ -35,43 +29,6 @@
         }
     })
 
-    //session obj:
-    // {"wg_session_wallet":"XqXHArJz95D8Vi36LUiFSkxRMnR5MiuEV4XuUmGZhkLCwy9CoN8PKMjVHRVGm4jVQC5mi7kUqjVpDZW58RDUQbx"}
-
-
-
-    // chrome.storage.local.get(null, items => {
-    //     Object.keys(items).forEach(key => {
-    //         console.log(`${key}: ${items[key]}`);
-    //         const maybeHashKey = key.split('|').at(-1);
-    //         if (maybeHashKey !== STORAGE_KEYS.HASH) return;
-    //         const walletKey = key.replace(STORAGE_KEYS.HASH, STORAGE_KEYS.ENC_WALLET);
-    //         const enc = items[walletKey];
-    //
-    //         console.log(`try restore enc:\n${enc}`)
-    //
-    //         kp = Keypair.fromSecretKey(bs58.decode(enc));
-    //
-    //         if (kp) {
-    //             console.log('restored on outset')
-    //         }
-    //     })
-    // })
-
-
-    // secureStore.get<string>(STORAGE_KEYS.HASH).then(async h => {
-    //     console.log('h: ' + h);
-    //     if (h) {
-    //         const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)
-    //         kp = Keypair.fromSecretKey(bs58.decode(enc))
-    //
-    //         if (kp) {
-    //             console.log('has wallet get popup: ' + kp.publicKey);
-    //         }
-    //     }
-    // });
-
-    /* live listener – fires in every popup when ENC_WALLET changes */
 
     chrome.storage.onChanged.addListener((c,a)=>{
 
@@ -101,31 +58,6 @@
             console.log("Password not set yet – waiting for unlock")
         }
     })
-
-
-
-    // secureStore.watch({
-    //     "walletguise_encrypted_wallet": (a,b) => {
-    //         try {
-    //             console.debug('secure watch:' + JSON.stringify(b))
-    //             alert('kp watch: ' + kp.publicKey)
-    //             secureStore.get<string>(STORAGE_KEYS.ENC_WALLET).then(enc => {
-    //                 kp = enc ? Keypair.fromSecretKey(bs58.decode(enc)) : null
-    //             })   // auto-decrypts
-    //
-    //         } catch {
-    //             // happens if setPassword() has not been called yet
-    //             kp = null
-    //         }
-    //     }
-    // })
-    /* ---------------------------------------------------------- */
-
-    /** called by Login.svelte once it has a decrypted Keypair */
-    // async function setKeypair(k: Keypair) {
-    //     kp = k
-    //     await secureStore.set(ENC_WALLET, bs58.encode(k.secretKey))       // encrypt + store
-    // }
 
 
 </script>

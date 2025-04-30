@@ -87,7 +87,7 @@ class WalletGuiseImpl implements WalletGuiseWallet {
 
 // Inject once
 ;(function () {
-  const w: any = window as any
+  const w = window as any
   if (w.walletguise) return
   w.walletguise = new WalletGuiseImpl()
   w.dispatchEvent(new Event("walletguise#initialized"))
