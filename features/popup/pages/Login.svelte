@@ -37,14 +37,13 @@
     //     })
     // })
 
-    chrome.storage.session.get(null, items => {
+    chrome.storage.local.get(null, items => {
         Object.keys(items).forEach(key => {
-            if (key === "wg_session_wallet") {
+            if (key.indexOf("walletguise_password_wallet")) {
                 hasWallet = true;
             }
         })
     })
-
 
     const handleSubmit = async () => {
         // e.preventDefault();
