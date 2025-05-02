@@ -5,7 +5,7 @@ import { sha256 } from "~shared/utils/crypto"
 import { writable } from "svelte/store"
 import { SecureStorage } from "@plasmohq/storage/secure"
 
-export const walletStore = writable<Keypair | null>(null);
+export const kpStore = writable<Keypair | null>(null);
 
 export async function saveNewWallet(keypair: Keypair, password: string, secureStorage: SecureStorage) {
   await secureStorage.setPassword(password);   // stores the symmetric key in RAM

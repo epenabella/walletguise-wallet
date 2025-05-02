@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Modal, Button } from "flowbite-svelte";
     import type { Transaction } from "@solana/web3.js";
-    import { walletStore } from "~shared/utils/wallet";
+    import { walletStore } from "~shared/utils/kpStore";
     // import {sendSignedTx} from "~shared/utils/solana";
 
     export let open = false;

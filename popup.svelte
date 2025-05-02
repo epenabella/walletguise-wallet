@@ -1,20 +1,18 @@
 <script lang="ts">
   import "~assets/style.css" // Tailwind base
-  import Login from "~features/popup/pages/Login.svelte"
-  import Balance from "~shared/components/Balance.svelte"
+  import Login from "~shared/views/LoginView.svelte"
+  import AuthView from "~shared/views/AuthView.svelte"
   import { Keypair } from "@solana/web3.js"
   import bs58 from "bs58"
   import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
   import { onMount } from "svelte"
-  import WgLogo from "~shared/components/icons/WgLogo.svelte"
-  import SendMoneyIcon from "~shared/components/icons/SendMoneyIcon.svelte"
-  import SettingsIcon from "~shared/components/icons/SettingsIcon.svelte"
-  import QrIcon from "~shared/components/icons/QrIcon.svelte"
-  import MenuButton from "~shared/components/buttons/MenuButton.svelte"
+  import NavMenu from "~shared/components/NavMenu.svelte"
+  import {sol} from '~shared/utils/balanceStore';
+  import Balance from "~shared/components/Balance.svelte"
+  import {kpStore} from '~shared/utils/kpStore'
 
   /* ---------- secure-storage setup ---------- */
 
-  let kp: Keypair | null = null
   // $: {
   //     console.log('kp changed: ' + JSON.stringify(kp?.publicKey))
   // }
@@ -25,8 +23,8 @@
   chrome.storage.session.get("wg_session_wallet", async (obj) => {
     console.log("session obj: " + JSON.stringify(obj))
     if (obj.wg_session_wallet) {
-      kp = Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet))
-      console.log("kp found: " + JSON.stringify(kp?.publicKey))
+      $kpStore = Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet))
+      console.log("kp found: " + JSON.stringify($kpStore?.publicKey))
 
       await chrome.runtime.sendMessage({
         type: "walletguise#restore",
@@ -51,9 +49,11 @@
     try {
       // This call *decrypts* because setPassword() was done in Login
       secureStore.get<string>(STORAGE_KEYS.ENC_WALLET).then(enc => {
-        kp = enc
+        const kp = enc
           ? Keypair.fromSecretKey(bs58.decode(enc))  // enc is now base-58
           : null
+
+          kpStore.set(kp);
 
         console.log("Restored kp:", kp?.publicKey?.toBase58())
       }).catch(e => {
@@ -65,6 +65,7 @@
     }
   })
 
+
   onMount(() => {
       document.documentElement.classList.toggle("dark", true)
       document.documentElement.classList.toggle("bg-white", true)
@@ -74,30 +75,19 @@
 
 <div
   class="flex w-full bg-white  dark:bg-gray-700 min-w-[350px] max-w-[350px] min-h-[380px] max-h-[380px]">
-    {#if !kp}
+    {#if !$kpStore}
         <div
-          class="flex flex-col min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] z-50 gap-2 py-2  bg-white border-r border-gray-200 dark:bg-gray-700 dark:border-gray-600">
-
-            <Login bind:kp={kp} />
+          class="flex flex-col justify-center min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] z-50 gap-2 py-2  bg-white border-r border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+            <Login />
         </div>
     {:else}
-        <div
-          class="flex flex-col min-w-[56px] max-w-[56px] min-h-[380px] max-h-[380px] z-50 gap-2 py-2  bg-white border-r border-gray-200 dark:bg-gray-700 dark:border-gray-600">
-            <MenuButton title="Main">
-                <WgLogo width={24} height={24} />
-            </MenuButton>
-            <MenuButton title="Send">
-                <SendMoneyIcon width={24} height={24} className="text-gray-500 dark:text-gray-400" />
-            </MenuButton>
-            <MenuButton title="Receive">
-                <QrIcon width={24} height={24} className="text-gray-500 dark:text-gray-400" />
-            </MenuButton>
-            <MenuButton title="Settings">
-                <SettingsIcon width={24} height={24} className="text-gray-500 dark:text-gray-400" />
-            </MenuButton>
-        </div>
-        <div class="min-h-[380px] max-h-[380px] min-w-[294px] max-w-[294px]">
-            <Balance {kp}/>
+
+        <div class="min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] flex">
+            <NavMenu />
+            <div class="flex flex-col min-h-[380px] max-h-[380px] min-w-[296px] max-w-[296px]">
+                <Balance />
+                <AuthView />
+            </div>
         </div>
     {/if}
 </div>

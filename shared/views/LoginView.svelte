@@ -2,14 +2,15 @@
     import { Input, Button } from "flowbite-svelte";
     import { Keypair } from "@solana/web3.js";
     import {createEventDispatcher, onMount} from "svelte";
-    import { saveNewWallet } from "~shared/utils/wallet"
+    import { saveNewWallet } from "~shared/utils/kpStore"
     import { STORAGE_KEYS, secureStore } from "~shared/utils/secureStore"
     import bs58 from "bs58"
     import { importFromMnemonic, sha256 } from "~shared/utils/crypto"
     import type { SecureStorage } from "@plasmohq/storage/secure"
+    import WgLogo from "~shared/components/icons/WgLogo.svelte"
+    import {kpStore} from "~shared/utils/kpStore"
 
     // export let secure: SecureStorage
-    export let kp: Keypair | null = null;
     const dispatch = createEventDispatcher();
     let password = "";
     let hasWallet = false
@@ -77,7 +78,7 @@
             console.log('unlock res: ' + JSON.stringify(r));
 
             if (tempKp) {
-                kp = tempKp;
+                kpStore.set(tempKp);
             }
 
             dispatch("success");
@@ -89,6 +90,10 @@
 
 </script>
 
+
+<div class="w-full flex justify-center">
+    <WgLogo width={64} height={64} />
+</div>
 <form class="p-4 flex flex-col gap-4 w-full" on:submit|preventDefault={handleSubmit}>
     <h2 class="text-xl font-semibold text-center text-gray-900 dark:text-white">
         {mode === "create" ? "Create Wallet Password" : "Unlock Wallet"}

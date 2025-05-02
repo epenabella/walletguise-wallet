@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Modal, Button } from "flowbite-svelte";
-    import { walletStore } from "~shared/utils/wallet";
+    import { walletStore } from "~shared/utils/kpStore";
     import { onMount } from "svelte";
     import QRCode from "qrcode";
     export let open = false;
