@@ -18,24 +18,6 @@
     let mode: "create" | "unlock";
     $: mode = hasWallet ? "unlock" : "create"        // "create" | "unlock"
 
-    // secureStore.get<string>(STORAGE_KEYS.HASH).then(h => {
-    //     hasWallet = !!h
-    //     if (hasWallet) {
-    //          alert('has wallet login');
-    //     }
-    // });
-
-    // chrome.storage.local.get(null, items => {
-    //     Object.keys(items).forEach(key => {
-    //         const maybeHashKey = key.split('|').at(-1);
-    //         if (maybeHashKey !== STORAGE_KEYS.HASH) return;
-    //         const walletKey = key.replace(STORAGE_KEYS.HASH, STORAGE_KEYS.ENC_WALLET);
-    //         // const enc = items[walletKey];
-    //         if (items[walletKey]) {
-    //             hasWallet = !!items[walletKey];
-    //         }
-    //     })
-    // })
 
     chrome.storage.local.get(null, items => {
         Object.keys(items).forEach(key => {
@@ -103,18 +85,11 @@
         }).catch(e => {
             console.log('unlock error: ' + JSON.stringify(e))
         });
-
-
     };
 
-    // onMount(() => {
-    //     secureStorage.get<string>(secureStorage.STORAGE_KEYS.HASH).then(res => {
-    //         savedHash = res;
-    //     })
-    // })
 </script>
 
-<form class="p-4 flex flex-col gap-4 w-64" on:submit|preventDefault={handleSubmit}>
+<form class="p-4 flex flex-col gap-4 w-64 bg-white dark:bg-gray-900" on:submit|preventDefault={handleSubmit}>
     <h2 class="text-xl font-semibold text-center">
         {mode === "create" ? "Create Wallet Password" : "Unlock Wallet"}
     </h2>

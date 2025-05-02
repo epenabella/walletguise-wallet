@@ -1,8 +1,8 @@
-import type { Keypair } from "@solana/web3.js";
-import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
+import { type Keypair } from "@solana/web3.js"
+import { STORAGE_KEYS } from "~shared/utils/secureStore"
 import bs58 from "bs58"
 import { sha256 } from "~shared/utils/crypto"
-import { type Writable, writable } from "svelte/store"
+import { writable } from "svelte/store"
 import { SecureStorage } from "@plasmohq/storage/secure"
 
 export const walletStore = writable<Keypair | null>(null);

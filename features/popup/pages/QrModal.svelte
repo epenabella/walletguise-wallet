@@ -6,7 +6,7 @@
     export let open = false;
     let dataUrl: string | null = null;
 
-    onMount(async () => {
+    onMount(() => {
         const unsub = walletStore.subscribe(async (kp) => {
             if (!kp) return;
             dataUrl = await QRCode.toDataURL(kp.publicKey.toBase58());

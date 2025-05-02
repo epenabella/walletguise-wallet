@@ -5,6 +5,7 @@
     import { Keypair } from "@solana/web3.js"
     import bs58 from "bs58"
     import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
+    import { onMount } from "svelte"
 
     /* ---------- secure-storage setup ---------- */
 
@@ -60,16 +61,24 @@
         }
     })
 
-
+onMount(() => {
+document.documentElement.classList.toggle('dark', true);
+})
 </script>
-<div>
+<div style="min-width: 300px !important;">
     {#if !kp}
         <Login bind:kp={kp}/>
     {:else}
+        <div class="flex flex-col">
+            <div class="flex">
+                <!-- TODO ADD NAVIGATION  -->
+            </div>
         <Balance {kp}/>
+        </div>
+    {/if}
+</div>
+
 <!--        <button class="mt-4 mx-auto block px-4 py-2 bg-purple-600 text-white rounded" on:click={() => (showQr = true)}>-->
 <!--            Show QR-->
 <!--        </button>-->
 <!--        <QrModal bind:open={showQr} {kp} />-->
-    {/if}
-</div>

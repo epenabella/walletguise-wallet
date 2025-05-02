@@ -1,6 +1,6 @@
 import type { PlasmoCSConfig } from "plasmo";
-import { PublicKey } from "@solana/web3.js"
-import { type WalletGuiseWallet } from "~shared/types/WalletGuiseConnect.types";
+import { PublicKey, type Transaction } from "@solana/web3.js"
+import { type SendTransactionOptions, type WalletGuiseWallet } from "~shared/types/WalletGuiseConnect.types"
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -71,13 +71,28 @@ class WalletGuiseImpl implements WalletGuiseWallet {
     this.listeners[event].add(cb as any)
   }
 
-  async signAndSendTransaction(tx: Uint8Array) {
-    const { signature, error } = await this.bridgeCall<{ signature: string; error?: string }>(
-      "walletguise#signAndSend",
-      { tx }
-    )
-    if (error) throw new Error(error)
-    return { signature }
+  async signAndSendTransaction(
+    transaction: Transaction,
+    options?: SendTransactionOptions
+  ): Promise<{ signature: string }> {
+    if (!this.isConnected) throw new Error('Not connected');
+
+    // Serialize transaction
+    const serializedTx = transaction.serialize({
+      requireAllSignatures: false,
+      verifySignatures: false,
+    });
+
+    const { signature, error } = await this.bridgeCall<{
+      signature: string;
+      error?: string;
+    }>("walletguise#signAndSend", {
+      tx: Array.from(serializedTx),
+      options
+    });
+
+    if (error) throw new Error(error);
+    return { signature };
   }
 
   private emit(ev: "connect" | "disconnect", pk: PublicKey | null) {

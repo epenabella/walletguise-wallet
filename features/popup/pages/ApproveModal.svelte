@@ -2,7 +2,7 @@
     import { Modal, Button } from "flowbite-svelte";
     import type { Transaction } from "@solana/web3.js";
     import { walletStore } from "~shared/utils/wallet";
-    import {sendSignedTx} from "~shared/utils/solana";
+    // import {sendSignedTx} from "~shared/utils/solana";
 
     export let open = false;
     export let tx: Transaction | null = null;
@@ -13,9 +13,9 @@
         if (!kp) return;
         tx.feePayer = kp.publicKey;
         tx.partialSign(kp);
-        const sig = await sendSignedTx(tx);
-        console.log("Tx sent:", sig);
-        open = false;
+        // const sig = await sendSignedTx(tx);
+        // console.log("Tx sent:", sig);
+        // open = false;
     };
 </script>
 

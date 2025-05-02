@@ -1,0 +1,18 @@
+    // secureStore.get<string>(STORAGE_KEYS.HASH).then(h => {
+    //     hasWallet = !!h
+    //     if (hasWallet) {
+    //          alert('has wallet login');
+    //     }
+    // });
+
+    // chrome.storage.local.get(null, items => {
+    //     Object.keys(items).forEach(key => {
+    //         const maybeHashKey = key.split('|').at(-1);
+    //         if (maybeHashKey !== STORAGE_KEYS.HASH) return;
+    //         const walletKey = key.replace(STORAGE_KEYS.HASH, STORAGE_KEYS.ENC_WALLET);
+    //         // const enc = items[walletKey];
+    //         if (items[walletKey]) {
+    //             hasWallet = !!items[walletKey];
+    //         }
+    //     })
+    // })

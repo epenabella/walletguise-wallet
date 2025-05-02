@@ -1,14 +1,12 @@
-// import * as storage from "~shared/utils/secureStore";
 import { decrypt, sha256 } from "~shared/utils/crypto"
 import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
 import { Keypair, PublicKey, Transaction } from "@solana/web3.js"
 import bs58 from 'bs58';
 import { connectionStore } from "~shared/utils/network";
 import { get } from "svelte/store"
-import * as sess from "@plasmohq/storage"
-import { publicKey } from "@solana/web3.js/src/layout"
 import { Storage } from "@plasmohq/storage"
 const connection = get(connectionStore);
+
 // RAM-only store
 // const sessionSecureStorage = new SecureStorage({area: 'session'}) //sess.Storage({ area: "session" }) // survives SW restarts
 const SESSION_KEY = "wg_session_wallet";      // NEW
@@ -110,15 +108,45 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         break
       }
       case "walletguise#signAndSend": {
-        // await restoreFromBlob();
-        if (!sessionWallet) return sendResponse({ error: "locked" })
-        const tx = Transaction.from(msg.tx)
-        tx.feePayer = sessionWallet.publicKey
-        tx.partialSign(sessionWallet)
-        const sig = await connection.sendRawTransaction(tx.serialize())
-        await connection.confirmTransaction(sig, "confirmed")
-        sendResponse({ signature: sig })
-        break
+        if (!sessionWallet) return sendResponse({ error: "locked" });
+
+        try {
+          const tx = Transaction.from(Buffer.from(msg.tx));
+
+          // 1. Validate Fee Payer
+          if (!tx.feePayer?.equals(sessionWallet.publicKey)) {
+            return sendResponse({ error: "Fee payer mismatch" });
+          }
+
+          // 2. Validate Recent Blockhash (prevent replay attacks)
+          if (!tx.recentBlockhash) {
+            return sendResponse({ error: "Missing recent blockhash" });
+          }
+
+          // 3. Partial Sign
+          tx.partialSign(sessionWallet);
+
+          // 4. Send to network
+          const serializedTx = tx.serialize();
+          const signature = await connection.sendRawTransaction(
+            serializedTx,
+            msg.options
+          );
+
+          // 5. Confirm if requested
+          if (msg.options?.preflightCommitment) {
+            await connection.confirmTransaction(
+              signature,
+              msg.options.preflightCommitment
+            );
+          }
+
+          sendResponse({ signature });
+        } catch (error) {
+          console.error('Transaction failed:', error);
+          sendResponse({ error: error.message });
+        }
+        break;
       }
       case "walletguise#getBalance": {
         // await restoreFromBlob();
