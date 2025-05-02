@@ -18,11 +18,11 @@
 </script>
 
 <div style="height: 344px !important;"
-  class="px-2 bg-white dark:bg-gray-900 max-h-[344px] min-h-[344px] min-w-[294px] max-w-[294px] flex flex-col">
+  class="bg-white dark:bg-gray-900 max-h-[344px] min-h-[344px] min-w-[294px] max-w-[294px] flex flex-col">
 
   <div class="w-full h-full">
     {#if $selectedAuthTab === 'balance'}
-      <div class="space-y-4">
+      <div class="p-2">
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white">WalletGuise Balance</h1>
         {#if $loading}
           <p class="text-center text-sm text-gray-900 dark:text-white">Loading …</p>

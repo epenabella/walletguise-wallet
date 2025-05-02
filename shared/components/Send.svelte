@@ -93,7 +93,9 @@
   }
 </script>
 
-<div class="space-y-4">
+<div class="p-2">
+  <h2 class="text-lg font-semibold mb-2 dark:text-white">Send</h2>
+
   {#if errorMessage}
     <div class="p-3 mb-3 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
       {errorMessage}

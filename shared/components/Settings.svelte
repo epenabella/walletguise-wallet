@@ -4,6 +4,7 @@ import DarkModeToggle from "~shared/components/settings-toggles/DarkModeToggle.s
 </script>
 
 <div class="p-2 flex flex-col">
+  <h2 class="text-lg font-semibold mb-2 dark:text-white">Settings</h2>
   <DarkModeToggle />
 
   <!-- //TODO: add dark mode setting switch  -->
