@@ -6,6 +6,8 @@
 
   export let kp: Keypair | null = null;
   const balanceStore = writable<number | null>(null)
+  $: sol = $balanceStore === null ? null : $balanceStore / 1_000_000_000
+
   const loading = writable(true)
   const ERROR_LOCKED = "locked"
   // --- State Variables ---
@@ -16,14 +18,9 @@
   let successMessage = '';
   let selectedTab = 'balance'; // Default to balance tab
 
-  // --- Lifecycle ---
-  onMount(() => {
-    fetchBalance()                  // initial load
-    const id = setInterval(fetchBalance, 30_000)
-    return () => clearInterval(id)
-  });
 
-  $: sol = $balanceStore === null ? null : $balanceStore / 1_000_000_000
+
+
 
 
   // --- Functions ---
@@ -126,10 +123,12 @@
     }
   }
 
-  // Helper to format lamports to SOL
-  function formatLamports(lamports: number): string {
-    return (lamports / 1_000_000_000).toFixed(4); // Show more precision
-  }
+  // --- Lifecycle ---
+  onMount(() => {
+    fetchBalance()                  // initial load
+    const id = setInterval(fetchBalance, 30_000)
+    return () => clearInterval(id)
+  });
 </script>
 
 <div class="p-4 bg-white dark:bg-gray-900 min-h-[450px] flex flex-col" style="width: 300px !important;">

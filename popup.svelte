@@ -6,6 +6,11 @@
     import bs58 from "bs58"
     import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
     import { onMount } from "svelte"
+    import WgLogo from "~shared/components/icons/WgLogo.svelte"
+    import SendMoneyIcon from "~shared/components/icons/SendMoneyIcon.svelte"
+    import SettingsIcon from "~shared/components/icons/SettingsIcon.svelte"
+    import QrIcon from "~shared/components/icons/QrIcon.svelte"
+    import MenuButton from "~shared/components/buttons/MenuButton.svelte"
 
     /* ---------- secure-storage setup ---------- */
 
@@ -65,18 +70,89 @@ onMount(() => {
 document.documentElement.classList.toggle('dark', true);
 })
 </script>
-<div style="min-width: 300px !important;">
-    {#if !kp}
-        <Login bind:kp={kp}/>
-    {:else}
-        <div class="flex flex-col">
-            <div class="flex">
-                <!-- TODO ADD NAVIGATION  -->
-            </div>
-        <Balance {kp}/>
+
+<div class="flex w-full bg-white border border-gray-100 rounded-lg dark:bg-gray-700 dark:border-gray-600  min-w-[350px] max-w-[344px]">
+    <div class="min-w-[56px] max-w-[56px] h-full z-50  bg-white border-t border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+        <div class="flex flex-col h-full w-full gap-2 py-4">
+            <MenuButton title="Main">
+                <WgLogo width={24} height={24}/>
+            </MenuButton>
+            <MenuButton title="Send">
+                <SendMoneyIcon width={24} height={24} className="text-gray-500 dark:text-gray-400"/>
+            </MenuButton>
+            <MenuButton title="Receive">
+                <QrIcon width={24} height={24} className="text-gray-500 dark:text-gray-400"/>
+            </MenuButton>
+            <MenuButton title="Settings">
+                <SettingsIcon width={24} height={24} className="text-gray-500 dark:text-gray-400"/>
+            </MenuButton>
         </div>
-    {/if}
+    </div>
+    <ul class="min-h-[450px] max-h-[450px] overflow-y-scroll">
+        <li class="border-b border-gray-100 dark:border-gray-600">
+            <a href="#" class="flex items-center justify-center w-full px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <img class="me-3 rounded-full w-11 h-11" src="/docs/images/people/profile-picture-1.jpg" alt="Jese Leos Avatar">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">New message from <span class="font-medium text-gray-900 dark:text-white">Jese Leos</span>: "Hey, what's up? All set for the presentation?"</p>
+                    <span class="text-xs text-blue-600 dark:text-blue-500">a few moments ago</span>
+                </div>
+            </a>
+        </li>
+        <li class="border-b border-gray-100 dark:border-gray-600">
+            <a href="#" class="flex items-center justify-center w-full px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <img class="me-3 rounded-full w-11 h-11" src="/docs/images/people/profile-picture-2.jpg" alt="Joseph McFall Avatar">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400"><span class="font-medium text-gray-900 dark:text-white">Joseph McFall</span> and <span class="font-medium text-gray-900 dark:text-white">5 others</span> started following you.</p>
+                    <span class="text-xs text-blue-600 dark:text-blue-500">10 minutes ago</span>
+                </div>
+            </a>
+        </li>
+        <li class="border-b border-gray-100 dark:border-gray-600">
+            <a href="#" class="flex items-center justify-center w-full px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <img class="me-3 rounded-full w-11 h-11" src="/docs/images/people/profile-picture-3.jpg" alt="Bonnie Green Avatar">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400"><span class="font-medium text-gray-900 dark:text-white">Bonnie Green</span> and <span class="font-medium text-gray-900 dark:text-white">141 others</span> love your story. See it and view more stories.</p>
+                    <span class="text-xs text-blue-600 dark:text-blue-500">23 minutes ago</span>
+                </div>
+            </a>
+        </li>
+        <li class="border-b border-gray-100 dark:border-gray-600">
+            <a href="#" class="flex items-center justify-center w-full px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <img class="me-3 rounded-full w-11 h-11" src="/docs/images/people/profile-picture-4.jpg" alt="Leslie Livingston Avatar">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400"><span class="font-medium text-gray-900 dark:text-white">Leslie Livingston</span> mentioned you in a comment: <span class="font-medium text-blue-600 dark:text-blue-500 hover:underline">@bonnie.green</span> what do you say?</p>
+                    <span class="text-xs text-blue-600 dark:text-blue-500">23 minutes ago</span>
+                </div>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="flex items-center justify-center w-full px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <img class="me-3 rounded-full w-11 h-11" src="/docs/images/people/profile-picture-5.jpg" alt="Robert Brown Avatar">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400"><span class="font-medium text-gray-900 dark:text-white">Robert Brown</span> posted a new video: Glassmorphism - learn how to implement the new design trend. </p>
+                    <span class="text-xs text-blue-600 dark:text-blue-500">23 minutes ago</span>
+                </div>
+            </a>
+        </li>
+    </ul>
 </div>
+
+
+<!--<div style="min-width: 300px !important;">-->
+<!--    {#if !kp}-->
+<!--        <Login bind:kp={kp}/>-->
+<!--    {:else}-->
+<!--        <div class="flex flex-col">-->
+<!--            <div class="flex">-->
+<!--                &lt;!&ndash; TODO ADD NAVIGATION  &ndash;&gt;-->
+<!--            </div>-->
+<!--        <Balance {kp}/>-->
+<!--        </div>-->
+<!--    {/if}-->
+<!--</div>-->
+
+
+
 
 <!--        <button class="mt-4 mx-auto block px-4 py-2 bg-purple-600 text-white rounded" on:click={() => (showQr = true)}>-->
 <!--            Show QR-->
