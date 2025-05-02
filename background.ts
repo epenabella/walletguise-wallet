@@ -39,19 +39,19 @@ async function restoreSession() {
 restoreSession().catch(console.error);
 
 // Watch for changes to the session wallet
-sessionStorage.watch({
-  [SESSION_KEY]: (change) => {
-    console.log("Session wallet updated from storage change: " + JSON.stringify(change.newValue));
-
-    if (change.newValue) {
-      // sessionWallet = Keypair.fromSecretKey(bs58.decode(change.newValue));
-      console.log("Session wallet updated from storage change: " + change.newValue);
-    } else {
-      // sessionWallet = null;
-      console.log("Session wallet cleared from storage change");
-    }
-  }
-});
+// sessionStorage.watch({
+//   [SESSION_KEY]: (change) => {
+//     console.log("Session wallet updated from storage change: " + JSON.stringify(change.newValue));
+//
+//     if (change.newValue) {
+//       // sessionWallet = Keypair.fromSecretKey(bs58.decode(change.newValue));
+//       console.log("Session wallet updated from storage change: " + change.newValue);
+//     } else {
+//       // sessionWallet = null;
+//       console.log("Session wallet cleared from storage change");
+//     }
+//   }
+// });
 
 
 // Helper: open extension popup when user initiates connect from web‑app

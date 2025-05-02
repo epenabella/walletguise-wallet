@@ -9,9 +9,9 @@
     /* ---------- secure-storage setup ---------- */
 
     let kp: Keypair | null = null
-    $: {
-        console.log('kp changed: ' + JSON.stringify(kp?.publicKey))
-    }
+    // $: {
+    //     console.log('kp changed: ' + JSON.stringify(kp?.publicKey))
+    // }
     // current decrypted key-pair
     let showQr = false
 
@@ -21,6 +21,7 @@
         console.log('session obj: ' + JSON.stringify(obj))
         if (obj.wg_session_wallet) {
             kp = Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet))
+            console.log('kp found: ' + JSON.stringify(kp?.publicKey))
 
             await chrome.runtime.sendMessage({
                 type: "walletguise#restore",

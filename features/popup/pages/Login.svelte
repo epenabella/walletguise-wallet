@@ -55,6 +55,11 @@
             // await storage.set(storage.STORAGE_KEYS.HASH, hash);
             const input = prompt("Please enter seed phrase", '');
 
+            //import or createNew()?  input seedphrase or grindClue to create
+
+            // if createNew(), then grind clue, then special transcaction
+
+
             tempKp = input ? importFromMnemonic(input).keypair : Keypair.generate();
 
             await secureStore.setPassword(password)

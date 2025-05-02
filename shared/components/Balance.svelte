@@ -20,9 +20,6 @@
         return
       }
 
-      console.log('fetch balance: ' + lamports);
-      // console.log('fetch balance publicKey: ' + publicKey);
-
       lamportsStore.set(lamports)
     } finally {
       loading.set(false)

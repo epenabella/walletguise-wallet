@@ -1,4 +1,9 @@
-import type { PublicKey } from "@solana/web3.js"
+import type { Commitment, PublicKey, Transaction } from "@solana/web3.js"
+
+export interface SendTransactionOptions {
+  skipPreflight?: boolean;
+  preflightCommitment?: Commitment;  // Now properly typed
+}
 
 export interface WalletGuiseWallet {
   /** Opens the extension’s prompt and resolves with the selected account */
@@ -11,7 +16,10 @@ export interface WalletGuiseWallet {
     callback: (publicKey: PublicKey | null) => void
   ): void
   /** Sign + send a serialized transaction */
-  signAndSendTransaction(tx: Uint8Array): Promise<{ signature: string }>
+  signAndSendTransaction(
+    transaction: Transaction,
+    options?: SendTransactionOptions
+  ): Promise<{ signature: string }>
   /** Reactive props – updated internally */
   readonly isConnected: boolean
   readonly publicKey: PublicKey | null
