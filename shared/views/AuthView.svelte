@@ -6,14 +6,17 @@
   import QrCode from "~shared/components/QrCode.svelte"
   import Send from "~shared/components/Send.svelte"
   import Settings from "~shared/components/Settings.svelte"
-
+  import { refreshSolPrice } from "~shared/utils/solana"
 
   const loading = writable(true)
   // --- Lifecycle ---
   onMount(() => {
-    fetchBalance(loading)                  // initial load
-    const id = setInterval(() => fetchBalance(loading), 30_000)
-    return () => clearInterval(id)
+    fetchBalance(loading)
+    const fetchBalanceId = setInterval(() => fetchBalance(loading), 30_000)
+
+    return () => {
+      clearInterval(fetchBalanceId)
+    }
   });
 </script>
 

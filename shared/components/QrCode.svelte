@@ -10,12 +10,12 @@
   let showCopied = false;
 
   // Generate QR code when component mounts or public key changes
-  onMount(async () => {
+  onMount(() => {
     console.log(`kp qr out: ${$kpStore.publicKey.toString()}`)
     if ($kpStore && canvas) {
       console.log(`kp qr in: ${$kpStore.publicKey.toString()}`)
       try {
-        qrCodeUrl = await QRCode.toDataURL(canvas, $kpStore.publicKey.toString(), {
+        QRCode.toDataURL(canvas, $kpStore.publicKey.toString(), {
           errorCorrectionLevel: "H",
           margin: 2,
           width: 256,
@@ -23,6 +23,8 @@
             dark: "#1f2937", // Tailwind gray-800
             light: "#ffffff" // White background
           }
+        }).then(url => {
+          qrCodeUrl = url;
         })
       } catch (err) {
         console.error("QR gen failed", err)

@@ -1,4 +1,5 @@
 import { derived, type Writable, writable } from "svelte/store"
+import { refreshSolPrice } from "~shared/utils/solana"
 
 const ERROR_LOCKED = "locked"
 export const balanceStore = writable<number | null>(null)
@@ -7,6 +8,8 @@ export const sol = derived(
   balanceStore,
   ($balanceStore) => $balanceStore === null ? null : $balanceStore / 1_000_000_000
 );
+
+export const usdStore = writable<number | null>(null);
 
 export async function fetchBalance(loading?: Writable<boolean>) {
   try {
@@ -24,6 +27,7 @@ export async function fetchBalance(loading?: Writable<boolean>) {
     }
 
     balanceStore.set(lamports)
+    refreshSolPrice()
   } finally {
     if (typeof loading !== "undefined") {
       loading.set(false)

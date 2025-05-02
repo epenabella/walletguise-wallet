@@ -1,7 +1,19 @@
-import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { writable } from "svelte/store"
 
-// export const RPC_ENDPOINT = "https://api.mainnet-beta.solana.com"; // change to devnet if needed
-// export const connection = new Connection(RPC_ENDPOINT, "confirmed");
+export const solPrice = writable<number | null>(null)
+let lastFetch = 0
 
-// export const fetchBalance = (pubkey: PublicKey) => connection.getBalance(pubkey);
-// export const sendSignedTx = (signed: Transaction) => connection.sendRawTransaction(signed.serialize());
+export async function refreshSolPrice() {
+  try {
+    if (Date.now() - lastFetch < 30000) return // 30-second cache
+
+    const response = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd"
+    )
+    const data = await response.json()
+    solPrice.set(data.solana.usd)
+    lastFetch = Date.now()
+  } catch (err) {
+    console.error("Price update failed:", err)
+  }
+}
