@@ -50,26 +50,22 @@
     <!-- hidden drawing surface -->
     <canvas bind:this={canvas} class="hidden" />
 
-    <!-- QR Code Container -->
+    <!-- qr code container -->
     <div class="relative mb-4 p-1 bg-white rounded-md max-w-[196px] max-h-[196px] self-center">
       <img
         src={qrCodeUrl}
         alt="Wallet Address QR Code"
         class="w-full h-auto mx-auto"
       />
-      <!-- Optional: Add wallet logo overlay -->
+      <!--  logo  -->
       <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <div class="bg-white p-2 rounded-full">
-          <!-- Your wallet logo here -->
-<!--          <svg class="w-8 h-8 text-gray-800" fill="currentColor" viewBox="0 0 24 24">-->
-<!--            &lt;!&ndash; SVG path data &ndash;&gt;-->
-<!--          </svg>-->
           <WgLogo width={32} height={32} blackAndWhite/>
         </div>
       </div>
     </div>
 
-    <!-- Address and Copy Button -->
+    <!-- address & copy button -->
     <div class="space-y-2">
       <p class="text-sm text-gray-600 dark:text-gray-300 text-center mb-2">
         Scan QR code or copy address below
