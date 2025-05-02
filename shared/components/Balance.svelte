@@ -131,9 +131,10 @@
   });
 </script>
 
-<div class="p-4 bg-white dark:bg-gray-900 min-h-[450px] flex flex-col" style="width: 300px !important;">
-  <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
-    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+<div style="height: 380px !important;"
+  class="px-2 bg-white dark:bg-gray-900 max-h-[380px] min-h-[380px] min-w-[294px] max-w-[294px] flex flex-col">
+  <div class="border-b border-gray-200 dark:border-gray-700">
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400 ">
       <li class="me-2">
         <button
           class="inline-block p-4 border-b-2 rounded-t-lg transition-colors duration-150"

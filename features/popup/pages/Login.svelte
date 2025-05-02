@@ -89,8 +89,8 @@
 
 </script>
 
-<form class="p-4 flex flex-col gap-4 w-64 bg-white dark:bg-gray-900" on:submit|preventDefault={handleSubmit}>
-    <h2 class="text-xl font-semibold text-center">
+<form class="p-4 flex flex-col gap-4 w-full" on:submit|preventDefault={handleSubmit}>
+    <h2 class="text-xl font-semibold text-center text-gray-900 dark:text-white">
         {mode === "create" ? "Create Wallet Password" : "Unlock Wallet"}
     </h2>
     <Input type="password" bind:value={password} placeholder="Password" required class="w-full" />
