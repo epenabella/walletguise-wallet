@@ -5,6 +5,7 @@
   import QrIcon from "~shared/components/icons/QrIcon.svelte"
   import MenuButton from "~shared/components/buttons/MenuButton.svelte"
   import { selectedAuthTab, type AuthTab } from "~shared/utils/navStore"
+  import GalleryIcon from "~shared/components/icons/GalleryIcon.svelte"
 
   function setTab(e: MouseEvent, tab: AuthTab) {
     e.preventDefault()
@@ -22,9 +23,14 @@
   <MenuButton title="Receive" onClick={e => setTab(e, 'receive')}>
     <QrIcon width={24} height={24} className="text-gray-500 dark:text-gray-400" />
   </MenuButton>
+  <MenuButton title="NFTs" onClick={e => setTab(e, 'nfts')}>
+    <GalleryIcon width={24} height={24} className="text-gray-500 dark:text-gray-400" />
+  </MenuButton>
+  <div class="grow"></div>
   <MenuButton title="Settings" onClick={e => setTab(e, 'settings')}>
     <SettingsIcon width={24} height={24} className="text-gray-500 dark:text-gray-400" />
   </MenuButton>
+
 </div>
 
 <!--<div class="border-b border-gray-200 dark:border-gray-700">-->

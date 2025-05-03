@@ -11,6 +11,9 @@
     "package": "plasmo package"
   },
   "dependencies": {
+    "@metaplex-foundation/mpl-core": "^1.3.0",
+    "@metaplex-foundation/umi": "^1.2.0",
+    "@metaplex-foundation/umi-bundle-defaults": "^1.2.0",
     "@plasmohq/storage": "^1.15.0",
     "@scure/bip39": "^1.6.0",
     "@solana/web3.js": "^1.98.2",

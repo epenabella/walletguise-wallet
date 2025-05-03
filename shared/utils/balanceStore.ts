@@ -9,8 +9,6 @@ export const sol = derived(
   ($balanceStore) => $balanceStore === null ? null : $balanceStore / 1_000_000_000
 );
 
-export const usdStore = writable<number | null>(null);
-
 export async function fetchBalance(loading?: Writable<boolean>) {
   try {
     if (typeof loading !== "undefined") {

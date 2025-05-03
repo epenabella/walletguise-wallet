@@ -7,6 +7,7 @@
   import Send from "~shared/components/Send.svelte"
   import Settings from "~shared/components/Settings.svelte"
   import { refreshSolPrice } from "~shared/utils/solana"
+  import NFTGallery from "~shared/components/NFTGallery.svelte"
 
   const loading = writable(true)
   // --- Lifecycle ---
@@ -47,6 +48,10 @@
 
     {#if $selectedAuthTab === 'receive'}
       <QrCode />
+    {/if}
+
+    {#if $selectedAuthTab === 'nfts'}
+      <NFTGallery />
     {/if}
 
     {#if $selectedAuthTab === 'settings'}
