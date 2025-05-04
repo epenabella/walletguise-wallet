@@ -14,13 +14,13 @@ type message = { type: string } & any;
 // Core messaging function
 async function send<T>(message: message): Promise<T> {
 
-  debugger;
+  // debugger;
 
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
       message,
       (response: BackgroundResponse<T>) => {
-        debugger;
+        // debugger;
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message))
         } else {

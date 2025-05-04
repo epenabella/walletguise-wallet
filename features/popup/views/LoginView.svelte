@@ -23,7 +23,8 @@
 
     chrome.storage.local.get(null, items => {
         Object.keys(items).forEach(key => {
-            if (key.indexOf(STORAGE_KEYS.ENC_WALLET)) {
+            if (key.indexOf(STORAGE_KEYS.ENC_WALLET) >= 0) {
+                debugger;
                 hasWallet = true;
             }
         })
@@ -69,21 +70,16 @@
             // dispatch("success")
         }
 
-
-
         await chrome.storage.session.set({
             wg_session_wallet: bs58.encode(tempKp.secretKey)
         }).then(res => {
-            if (tempKp) {
-                kpStore.set(tempKp);
-            }
             unlockWallet(password).then(r => {
-                console.log('unlock then(): ' + JSON.stringify(r))
-                console.log('unlock res: ' + JSON.stringify(r));
+                if (tempKp) {
+                    kpStore.set(tempKp);
+                }
                 dispatch("success");
-
             }).catch(e => {
-                console.log('unlock error: ' + JSON.stringify(e))
+                console.error('login unlock error: ' + JSON.stringify(e))
             });
         })
 
