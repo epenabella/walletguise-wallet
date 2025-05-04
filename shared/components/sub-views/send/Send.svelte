@@ -3,6 +3,25 @@
   import type { SendTransactionOptions } from "~shared/types/WalletGuiseConnect.types"
   import { balanceStore, fetchBalance } from "~shared/utils/balanceStore"
   import {kpStore} from "~shared/utils/kpStore"
+  import { signAndSendTransaction } from "~shared/utils/backgroundHelper"
+  import ConfirmTransactionModal from "~shared/components/sub-views/send/ConfirmTransactionModal.svelte"
+
+  let modalComponent;
+
+  function handleOpenModal() {
+    // Call the exported method from the child component
+    modalComponent.open();
+  }
+
+  function handleCloseModal() {
+    modalComponent.close();
+  }
+
+  function accessModalElement() {
+    const element = modalComponent.getModalElement();
+    console.log('Modal element:', element);
+    // Do whatever you need with the element
+  }
 
   let recipient = '';
   let amount = '';
@@ -66,17 +85,8 @@
       };
 
       console.log("Sending transaction via WalletGuise provider:", transaction);
-      // const { signature, error } = await chrome.runtime.sendMessage({
-      //   type: "walletguise#signAndSend"
-      // })
 
-      transaction.partialSign($kpStore);
-
-      const serializedTx = transaction.serialize();
-      const signature = await connection.sendRawTransaction(
-        serializedTx,
-        options
-      );
+      const signature = await signAndSendTransaction(transaction, options);
 
       successMessage = `Transaction sent successfully! Signature: ${signature.substring(0, 10)}...`; // Show partial signature
       recipient = ''; // Clear form
@@ -96,18 +106,18 @@
 <div class="p-2">
   <h2 class="text-lg font-semibold mb-2 dark:text-white">Send</h2>
 
-  {#if errorMessage}
-    <div class="p-3 mb-3 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-      {errorMessage}
-    </div>
-  {/if}
-  {#if successMessage}
-    <div class="p-3 mb-3 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
-      {successMessage}
-    </div>
-  {/if}
+  <!--{#if errorMessage}-->
+  <!--  <div class="p-3 mb-3 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">-->
+  <!--    {errorMessage}-->
+  <!--  </div>-->
+  <!--{/if}-->
+  <!--{#if successMessage}-->
+  <!--  <div class="p-3 mb-3 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">-->
+  <!--    {successMessage}-->
+  <!--  </div>-->
+  <!--{/if}-->
 
-  <form on:submit|preventDefault={handleSendTransaction} class="space-y-4">
+  <form on:submit|preventDefault={handleOpenModal} class="space-y-4 min-h-[268px] max-h-[268px]">
     <div>
       <label for="token-send" class="block mb-1 text-xs font-medium text-gray-900 dark:text-white">Token</label>
       <div id="token-send" class="flex items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm text-gray-900 dark:text-white">
@@ -153,4 +163,5 @@
       {/if}
     </button>
   </form>
+  <ConfirmTransactionModal bind:this={modalComponent} />
 </div>

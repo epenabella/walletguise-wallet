@@ -2,7 +2,7 @@ import { decrypt, sha256 } from "~shared/utils/crypto"
 import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
 import { Keypair, PublicKey, Transaction } from "@solana/web3.js"
 import bs58 from 'bs58';
-import { connectionStore } from "~shared/utils/network";
+import { connectionStore } from "~shared/utils/networkStore";
 import { get } from "svelte/store"
 import { Storage } from "@plasmohq/storage"
 const connection = get(connectionStore);

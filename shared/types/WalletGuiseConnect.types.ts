@@ -1,5 +1,9 @@
 import type { Commitment, PublicKey, Transaction } from "@solana/web3.js"
 
+export const ERROR_LOCKED = "locked"
+
+export type BackgroundResponse<T> = T | { error: string };
+
 export interface SendTransactionOptions {
   skipPreflight?: boolean;
   preflightCommitment?: Commitment;  // Now properly typed

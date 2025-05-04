@@ -3,11 +3,11 @@
   import { writable } from "svelte/store"
   import { selectedAuthTab } from "~shared/utils/navStore"
   import { fetchBalance, sol } from "~shared/utils/balanceStore"
-  import QrCode from "~shared/components/QrCode.svelte"
-  import Send from "~shared/components/Send.svelte"
-  import Settings from "~shared/components/Settings.svelte"
+  import QrCode from "~shared/components/sub-views/QrCode.svelte"
+  import Settings from "~shared/components/sub-views/Settings.svelte"
   import { refreshSolPrice } from "~shared/utils/solana"
-  import NFTGallery from "~shared/components/NFTGallery.svelte"
+  import NFTGallery from "~shared/components/sub-views/NFTGallery.svelte"
+  import Send from "~shared/components/sub-views/send/Send.svelte"
 
   const loading = writable(true)
   // --- Lifecycle ---

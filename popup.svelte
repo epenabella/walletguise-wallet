@@ -1,15 +1,15 @@
 <script lang="ts">
   import "~assets/style.css" // Tailwind base
-  import Login from "~shared/views/LoginView.svelte"
-  import AuthView from "~shared/views/AuthView.svelte"
+  import Login from "~features/popup/views/LoginView.svelte"
+  import AuthView from "~features/popup/views/AuthView.svelte"
   import { Keypair } from "@solana/web3.js"
   import bs58 from "bs58"
   import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
   import { onMount } from "svelte"
   import NavMenu from "~shared/components/NavMenu.svelte"
   import {sol} from '~shared/utils/balanceStore';
-  import Balance from "~shared/components/Balance.svelte"
   import {kpStore} from '~shared/utils/kpStore'
+  import Balance from "~shared/components/sub-views/Balance.svelte"
 
   /* ---------- secure-storage setup ---------- */
 
@@ -70,6 +70,7 @@
       document.documentElement.classList.toggle("dark", true)
       document.documentElement.classList.toggle("bg-white", true)
       document.documentElement.classList.toggle("dark:bg-gray-700", true)
+      document.body.classList.toggle("relative", true)
   })
 </script>
 

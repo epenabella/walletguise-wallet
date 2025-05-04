@@ -54,6 +54,11 @@
   onMount(() => {
     getNFTs()
   })
+  function handleNftError(e) {
+      if (e && e.currentTarget && e.currentTarget.style) {
+        e.currentTarget.style.display = 'none'
+      }
+  }
 </script>
 
 <div class="p-2 flex flex-col overflow-y-hidden max-h-[344px] h-[344px]">
@@ -86,7 +91,7 @@
                   alt={nft.name}
                   class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                   loading="lazy"
-                  on:error={(e) => (e.currentTarget.style.display = 'none'}
+                  on:error={handleNftError}
                 />
               {:else}
                 <div class="flex items-center justify-center w-full h-full text-gray-400">
