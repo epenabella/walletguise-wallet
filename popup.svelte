@@ -4,21 +4,16 @@
   import AuthView from "~features/popup/views/AuthView.svelte"
   import { Keypair } from "@solana/web3.js"
   import bs58 from "bs58"
-  import { wgLocalSecureStore, STORAGE_KEYS } from "~shared/utils/wgAppStore"
+  import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
   import { onMount } from "svelte"
   import NavMenu from "~shared/components/NavMenu.svelte"
   import {kpStore} from '~shared/utils/kpStore'
   import Balance from "~shared/components/sub-views/Balance.svelte"
   import { clusterStore } from "~shared/utils/networkStore"
   import { restoreWallet } from "~shared/utils/backgroundHelper"
+  import { STORAGE_KEYS } from "~shared/utils/constants"
 
-  chrome.storage.session.get("wg_session_wallet", async (obj) => {
-      if (obj.wg_session_wallet) {
-          await restoreWallet(obj.wg_session_wallet);
-          kpStore.set(Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet)))
-      }
-  })
-
+  let mounted = false;
 
   chrome.storage.onChanged.addListener((c, a) => {
 
@@ -57,12 +52,21 @@
       document.documentElement.classList.toggle("bg-white", true)
       document.documentElement.classList.toggle("dark:bg-gray-700", true)
       document.body.classList.toggle("relative", true)
+
+      chrome.storage.session.get("wg_session_wallet", async (obj) => {
+          if (obj.wg_session_wallet) {
+              await restoreWallet(obj.wg_session_wallet);
+              kpStore.set(Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet)))
+          }
+          mounted = true;
+          return;
+      })
   })
 </script>
 
 <div
   class="flex w-full bg-white  dark:bg-gray-700 min-w-[350px] max-w-[350px] min-h-[380px] max-h-[380px]">
-    {#if !$clusterStore}
+    {#if !$clusterStore || !mounted}
         <div class="min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] flex">
 
         </div>

@@ -1,16 +1,18 @@
 <script lang="ts">
-    import { Input, Button } from "flowbite-svelte";
-    import { Keypair } from "@solana/web3.js";
-    import {createEventDispatcher, onMount} from "svelte";
-    import { STORAGE_KEYS, wgLocalSecureStore } from "~shared/utils/wgAppStore"
+    import { Input, Button } from "flowbite-svelte"
+    import { Keypair } from "@solana/web3.js"
+    import { createEventDispatcher } from "svelte"
+    import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
     import bs58 from "bs58"
     import { importFromMnemonic, sha256 } from "~shared/utils/crypto"
     import type { SecureStorage } from "@plasmohq/storage/secure"
     import WgLogo from "~shared/components/icons/WgLogo.svelte"
-    import {kpStore} from "~shared/utils/kpStore"
+    import { kpStore } from "~shared/utils/kpStore"
+    import { unlockWallet } from "~shared/utils/backgroundHelper"
+    import { STORAGE_KEYS } from "~shared/utils/constants"
 
     // export let secure: SecureStorage
-    const dispatch = createEventDispatcher();
+    const dispatch = createEventDispatcher()
     let password = "";
     let hasWallet = false
 
@@ -21,7 +23,7 @@
 
     chrome.storage.local.get(null, items => {
         Object.keys(items).forEach(key => {
-            if (key.indexOf("walletguise_password_wallet")) {
+            if (key.indexOf(STORAGE_KEYS.ENC_WALLET)) {
                 hasWallet = true;
             }
         })
@@ -67,24 +69,25 @@
             // dispatch("success")
         }
 
+
+
         await chrome.storage.session.set({
             wg_session_wallet: bs58.encode(tempKp.secretKey)
-        })
-
-        chrome.runtime.sendMessage({ type: "walletguise#unlock", password }).then(r => {
-            console.log('unlock then(): ' + JSON.stringify(r))
-
-            console.log('unlock res: ' + JSON.stringify(r));
-
+        }).then(res => {
             if (tempKp) {
                 kpStore.set(tempKp);
             }
+            unlockWallet(password).then(r => {
+                console.log('unlock then(): ' + JSON.stringify(r))
+                console.log('unlock res: ' + JSON.stringify(r));
+                dispatch("success");
 
-            dispatch("success");
+            }).catch(e => {
+                console.log('unlock error: ' + JSON.stringify(e))
+            });
+        })
 
-        }).catch(e => {
-            console.log('unlock error: ' + JSON.stringify(e))
-        });
+
     };
 
 </script>

@@ -1,10 +1,11 @@
 import { decrypt, sha256 } from "~shared/utils/crypto"
-import { wgLocalSecureStore, STORAGE_KEYS } from "~shared/utils/wgAppStore"
+import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
 import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js"
 import bs58 from 'bs58';
 import { connectionStore } from "~shared/utils/networkStore";
 import { get } from "svelte/store"
 import { Storage } from "@plasmohq/storage"
+import { STORAGE_KEYS } from "~shared/utils/constants"
 
 // RAM-only store
 // const sessionSecureStorage = new SecureStorage({area: 'session'}) //sess.Storage({ area: "session" }) // survives SW restarts

@@ -1,9 +1,10 @@
 import { clusterApiUrl, Connection } from "@solana/web3.js";
 import { derived, writable, type Readable } from "svelte/store";
 import { fetchBalance } from "~shared/utils/balanceStore";
-import { STORAGE_KEYS, wgLocalStorage } from "~shared/utils/wgAppStore";
+import { wgLocalStorage } from "~shared/utils/wgAppStore";
 import { Metaplex } from "@metaplex-foundation/js"
 import { nftData } from "~shared/utils/nftStore"
+import { STORAGE_KEYS } from "~shared/utils/constants"
 
 export type Cluster = "mainnet-beta" | "devnet" | "testnet";
 
