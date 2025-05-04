@@ -17,3 +17,12 @@ export async function refreshSolPrice() {
     console.error("Price update failed:", err)
   }
 }
+
+export const solToLamports = (rawAmount:number | string) => {
+  const numericAmount = Number(rawAmount);
+  if (isNaN(numericAmount) || numericAmount <= 0) {
+    throw Error ('Amount must be a positive number or string to number');
+  }
+
+  return numericAmount * 1_000_000_000
+}

@@ -5,20 +5,34 @@
   import {kpStore} from "~shared/utils/kpStore"
   import { signAndSendTransaction } from "~shared/utils/backgroundHelper"
   import ConfirmTransactionModal from "~shared/components/sub-views/send/ConfirmTransactionModal.svelte"
+  import { solToLamports } from "~shared/utils/solana"
+  import ErrorMessageModal from "~shared/components/sub-views/send/ErrorMessageModal.svelte"
 
-  let modalComponent;
+  let confirmModalComponent;
+  let errorModalComponent;
+  let errorTitle = 'Transaction Failed';
+  let errorMessage = '';
+  let errorDetails = '';
 
-  function handleOpenModal() {
-    // Call the exported method from the child component
-    modalComponent.open();
+
+  function handleOpenErrorModal(title, message, details = '') {
+    errorTitle = title;
+    errorMessage = message;
+    errorDetails = details;
+    errorModalComponent.open();
   }
 
-  function handleCloseModal() {
-    modalComponent.close();
+  function handleOpenConfirmModal() {
+    // Call the exported method from the child component
+    confirmModalComponent.open();
+  }
+
+  function handleCloseConfirmModal() {
+    confirmModalComponent.close();
   }
 
   function accessModalElement() {
-    const element = modalComponent.getModalElement();
+    const element = confirmModalComponent.getModalElement();
     console.log('Modal element:', element);
     // Do whatever you need with the element
   }
@@ -26,42 +40,55 @@
   let recipient = '';
   let amount = '';
   let isLoading = false;
-  let errorMessage = '';
   let successMessage = '';
 
+  function clearMessages() {
+    errorMessage = '';
+    errorDetails = '';
+    successMessage = '';
+  }
 
-  async function handleSendTransaction() {
+
+  // Validate inputs before showing confirmation modal
+  async function validateAndShowModal(event) {
+    event.preventDefault();
+
     // Clear previous messages
     errorMessage = '';
     successMessage = '';
 
     // --- Input Validation ---
     if (!recipient || !amount) {
-      errorMessage = 'Please fill all fields';
+      handleOpenErrorModal('Validation Error', 'Please fill all fields');
       return;
     }
 
     try {
-      // Validate recipient address format (basic check)
+      // Validate recipient address format
       new PublicKey(recipient); // Throws error if invalid format
     } catch (err) {
-      errorMessage = 'Invalid recipient address format';
+      handleOpenErrorModal('Invalid Address', 'The recipient address format is invalid', err.message);
       return;
     }
 
     const numericAmount = Number(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
-      errorMessage = 'Amount must be a positive number';
+      handleOpenErrorModal('Invalid Amount', 'Amount must be a positive number');
       return;
     }
 
-    const lamportsToSend = numericAmount * 1_000_000_000;
+    const lamportsToSend = solToLamports(amount);
     if (lamportsToSend > $balanceStore) {
-      errorMessage = 'Insufficient balance';
+      handleOpenErrorModal('Insufficient Balance', `You need at least ${numericAmount} SOL to complete this transaction`);
       return;
     }
 
-    // --- Transaction Sending ---
+    // All validations passed, show confirmation modal
+    handleOpenConfirmModal();
+  }
+
+  async function handleSendTransaction() {
+      // --- Transaction Sending ---
     try {
       isLoading = true;
 
@@ -71,7 +98,7 @@
         SystemProgram.transfer({
           fromPubkey: $kpStore.publicKey,
           toPubkey: new PublicKey(recipient), // Validate address format before calling this function if needed
-          lamports: lamportsToSend // Convert SOL to lamports, ensure integer
+          lamports: solToLamports(amount) // Convert SOL to lamports, ensure integer
         })
       );
       transaction.feePayer = $kpStore.publicKey;
@@ -96,9 +123,16 @@
       setTimeout(fetchBalance, 750);
     } catch (err) {
       console.error("Transaction Error:", err);
-      errorMessage = `Transaction failed: ${err.message}`;
+      handleOpenErrorModal(
+        'Transaction Failed',
+        'There was an error sending your transaction',
+        err.message
+      );
+
     } finally {
       isLoading = false;
+      handleCloseConfirmModal(); // Close modal after transaction completes (success or error)
+
     }
   }
 </script>
@@ -117,7 +151,7 @@
   <!--  </div>-->
   <!--{/if}-->
 
-  <form on:submit|preventDefault={handleOpenModal} class="space-y-4 min-h-[268px] max-h-[268px]">
+  <form on:submit|preventDefault={validateAndShowModal} class="space-y-4 min-h-[268px] max-h-[268px]">
     <div>
       <label for="token-send" class="block mb-1 text-xs font-medium text-gray-900 dark:text-white">Token</label>
       <div id="token-send" class="flex items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm text-gray-900 dark:text-white">
@@ -163,5 +197,17 @@
       {/if}
     </button>
   </form>
-  <ConfirmTransactionModal bind:this={modalComponent} />
+  <ConfirmTransactionModal
+    bind:this={confirmModalComponent}
+    recipient={recipient}
+    amount={amount}
+    onConfirm={handleSendTransaction}
+  />
+  <ErrorMessageModal
+    bind:this={errorModalComponent}
+    errorTitle={errorTitle}
+    errorMessage={errorMessage}
+    errorDetails={errorDetails}
+    onDismiss={clearMessages}
+  />
 </div>
