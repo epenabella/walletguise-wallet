@@ -7,6 +7,8 @@
   import ConfirmTransactionModal from "~shared/components/sub-views/send/ConfirmTransactionModal.svelte"
   import { solToLamports } from "~shared/utils/solana"
   import ErrorMessageModal from "~shared/components/sub-views/send/ErrorMessageModal.svelte"
+  import { get } from "svelte/store"
+  import { connectionStore } from "~shared/utils/networkStore"
 
   let confirmModalComponent;
   let errorModalComponent;
@@ -102,7 +104,7 @@
         })
       );
       transaction.feePayer = $kpStore.publicKey;
-      const connection = new Connection('https://api.devnet.solana.com', commitment); // Use appropriate network and commitment
+      const connection = get(connectionStore); // Use appropriate network and commitment
       const { blockhash } = await connection.getLatestBlockhash(commitment);
       transaction.recentBlockhash = blockhash;
 

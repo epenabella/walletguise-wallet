@@ -4,12 +4,13 @@
   import AuthView from "~features/popup/views/AuthView.svelte"
   import { Keypair } from "@solana/web3.js"
   import bs58 from "bs58"
-  import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
+  import { wgLocalSecureStore, STORAGE_KEYS } from "~shared/utils/wgAppStore"
   import { onMount } from "svelte"
   import NavMenu from "~shared/components/NavMenu.svelte"
   import {sol} from '~shared/utils/balanceStore';
   import {kpStore} from '~shared/utils/kpStore'
   import Balance from "~shared/components/sub-views/Balance.svelte"
+  import { clusterStore } from "~shared/utils/networkStore"
 
   /* ---------- secure-storage setup ---------- */
 
@@ -48,7 +49,7 @@
 
     try {
       // This call *decrypts* because setPassword() was done in Login
-      secureStore.get<string>(STORAGE_KEYS.ENC_WALLET).then(enc => {
+      wgLocalSecureStore.get<string>(STORAGE_KEYS.ENC_WALLET).then(enc => {
         const kp = enc
           ? Keypair.fromSecretKey(bs58.decode(enc))  // enc is now base-58
           : null
@@ -76,16 +77,23 @@
 
 <div
   class="flex w-full bg-white  dark:bg-gray-700 min-w-[350px] max-w-[350px] min-h-[380px] max-h-[380px]">
-    {#if !$kpStore}
+    {#if !$clusterStore}
+        <div class="min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] flex">
+
+        </div>
+
+    {:else if !$kpStore}
+        <!-- This branch will only execute if $kpStore is truthy AND someOtherCondition is truthy -->
         <div
           class="flex flex-col justify-center min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] z-50 gap-2 py-2  bg-white border-r border-gray-200 dark:bg-gray-700 dark:border-gray-600">
             <Login />
         </div>
+
     {:else}
 
         <div class="min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] flex">
             <NavMenu />
-            <div class="flex flex-col min-h-[380px] max-h-[380px] min-w-[296px] max-w-[296px]">
+            <div class="flex flex-col min-h-[380px] max-h-[380px] min-w-[296px] max-w-[296px] w-[296px]">
                 <Balance />
                 <AuthView />
             </div>

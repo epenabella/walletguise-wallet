@@ -1,6 +1,6 @@
 import { decrypt, sha256 } from "~shared/utils/crypto"
-import { secureStore, STORAGE_KEYS } from "~shared/utils/secureStore"
-import { Keypair, PublicKey, Transaction } from "@solana/web3.js"
+import { wgLocalSecureStore, STORAGE_KEYS } from "~shared/utils/wgAppStore"
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js"
 import bs58 from 'bs58';
 import { connectionStore } from "~shared/utils/networkStore";
 import { get } from "svelte/store"
@@ -72,12 +72,12 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         return sendResponse({ ok: true })
       }
       case "walletguise#unlock": {
-        if ((await sha256(msg.password)) !== (await secureStore.get<string>(STORAGE_KEYS.HASH)))
+        if ((await sha256(msg.password)) !== (await wgLocalSecureStore.get<string>(STORAGE_KEYS.HASH)))
           return false                                          // wrong password
 
-        await secureStore.setPassword(msg.password)                 // prime crypto key
+        await wgLocalSecureStore.setPassword(msg.password)                 // prime crypto key
 
-        const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)
+        const enc = await wgLocalSecureStore.get<string>(STORAGE_KEYS.ENC_WALLET)
         if (!enc) return sendResponse({ error: "no wallet" })
 
         sessionWallet = Keypair.fromSecretKey(await decrypt(enc, msg.password));
@@ -110,7 +110,8 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         if (!sessionWallet) return sendResponse({ error: "locked" });
 
         try {
-          const sendSendConnection = get(connectionStore)
+          const sendSendConnection = new Connection(msg.rpcUrl, "confirmed");
+
           const tx = Transaction.from(Buffer.from(msg.tx));
 
           // 1. Validate Fee Payer
@@ -153,8 +154,12 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         if (!sessionWallet) return sendResponse({ error: "locked" })
           // TODO:// use session!
           // sessionWallet.publicKey,
+
         // const pk = new PublicKey(sessionWallet.publicKey)      // ← convert
-        const balanceConnection = get(connectionStore);
+        console.log('balance msg.rpcUrl: ', JSON.stringify(msg.rpcUrl));
+        console.log('balance msg: ', JSON.stringify(msg));
+        const balanceConnection = new Connection(msg.rpcUrl, "confirmed");
+        console.log('balanceConnection: ', balanceConnection.rpcEndpoint);
 
         const lamports = await balanceConnection.getBalance(
           sessionWallet.publicKey,          // ← use the cached PublicKey

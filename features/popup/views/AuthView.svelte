@@ -5,7 +5,6 @@
   import { fetchBalance, sol } from "~shared/utils/balanceStore"
   import QrCode from "~shared/components/sub-views/QrCode.svelte"
   import Settings from "~shared/components/sub-views/Settings.svelte"
-  import { refreshSolPrice } from "~shared/utils/solana"
   import NFTGallery from "~shared/components/sub-views/NFTGallery.svelte"
   import Send from "~shared/components/sub-views/send/Send.svelte"
 
@@ -63,7 +62,5 @@
         Transaction history feature is under development.
       </div>
     {/if}
-
-
   </div>
 </div>

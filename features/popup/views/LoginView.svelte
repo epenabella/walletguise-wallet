@@ -2,8 +2,7 @@
     import { Input, Button } from "flowbite-svelte";
     import { Keypair } from "@solana/web3.js";
     import {createEventDispatcher, onMount} from "svelte";
-    import { saveNewWallet } from "~shared/utils/kpStore"
-    import { STORAGE_KEYS, secureStore } from "~shared/utils/secureStore"
+    import { STORAGE_KEYS, wgLocalSecureStore } from "~shared/utils/wgAppStore"
     import bs58 from "bs58"
     import { importFromMnemonic, sha256 } from "~shared/utils/crypto"
     import type { SecureStorage } from "@plasmohq/storage/secure"
@@ -45,25 +44,25 @@
 
             tempKp = input ? importFromMnemonic(input).keypair : Keypair.generate();
 
-            await secureStore.setPassword(password)
-            await secureStore.set(STORAGE_KEYS.ENC_WALLET, bs58.encode(tempKp.secretKey))
+            await wgLocalSecureStore.setPassword(password)
+            await wgLocalSecureStore.set(STORAGE_KEYS.ENC_WALLET, bs58.encode(tempKp.secretKey))
             console.log('created kp: ' + tempKp.publicKey)
 
-            await secureStore.set(STORAGE_KEYS.HASH, await sha256(password))
+            await wgLocalSecureStore.set(STORAGE_KEYS.HASH, await sha256(password))
             hasWallet = true;
             // dispatch("success");
         } else {
             // ------- unlock ----------
-            await secureStore.setPassword(password)
+            await wgLocalSecureStore.setPassword(password)
             // prime AES key
-            const enc = await secureStore.get<string>(STORAGE_KEYS.ENC_WALLET)
+            const enc = await wgLocalSecureStore.get<string>(STORAGE_KEYS.ENC_WALLET)
             console.log('unlock enc: ' + enc.toLowerCase())
 
             if (!enc) return alert("Stored wallet not found")
 
             tempKp = Keypair.fromSecretKey(bs58.decode(enc))
             console.log('unlock kp: ' + tempKp.publicKey)
-            await secureStore.set(STORAGE_KEYS.ENC_WALLET, enc)
+            await wgLocalSecureStore.set(STORAGE_KEYS.ENC_WALLET, enc)
             hasWallet = true;
             // dispatch("success")
         }

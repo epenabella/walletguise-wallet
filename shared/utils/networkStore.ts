@@ -1,13 +1,52 @@
-import { writable, get } from "svelte/store";
-import { Connection, clusterApiUrl } from "@solana/web3.js";
+import { clusterApiUrl, Connection } from "@solana/web3.js";
+import { derived, writable, type Readable } from "svelte/store";
+import { fetchBalance } from "~shared/utils/balanceStore";
+import { STORAGE_KEYS, wgLocalStorage } from "~shared/utils/wgAppStore";
+import { Metaplex } from "@metaplex-foundation/js"
+import { nftData } from "~shared/utils/nftStore"
 
 export type Cluster = "mainnet-beta" | "devnet" | "testnet";
-export const clusterStore = writable<Cluster>("devnet");
 
-export const connectionStore = writable<Connection>(
-  new Connection(clusterApiUrl(get(clusterStore)), "confirmed")
-);
+export const clusterStore = writable<Cluster | undefined>()
 
-clusterStore.subscribe((c) =>
-  connectionStore.set(new Connection(clusterApiUrl(c), "confirmed"))
-);
+wgLocalStorage.get(STORAGE_KEYS.CLUSTER).then((res: Cluster | undefined) => {
+  clusterStore.set(res ?? "devnet")
+})
+
+clusterStore.subscribe(async (c) => {
+  if (c) {
+    await wgLocalStorage.set(STORAGE_KEYS.CLUSTER, c)
+  }
+  nftData.set(null);
+})
+
+export const rpcUrl: Readable<string | null> = derived(
+  clusterStore,
+  (cluster) => {
+    if (cluster) {
+      return cluster === "mainnet-beta"
+        ? `https://mainnet.helius-rpc.com/?api-key=7172e6d9-44f0-4473-b866-cc83b9cffdbc`
+        : clusterApiUrl(cluster)
+    } else {
+      return null
+    }
+  }
+)
+
+export const connectionStore: Readable<Connection | null> = derived(
+  rpcUrl,
+  (rpcUrl) => rpcUrl ? new Connection(rpcUrl, "confirmed") : null
+)
+
+export const metaplexStore: Readable<Metaplex | null> = derived(
+  connectionStore,
+  (c) => c ? Metaplex.make(c) : null
+)
+
+connectionStore.subscribe(async (c) => {
+  console.log(`connectionStore changed: ${c?.rpcEndpoint}`)
+
+  if (c) {
+    await fetchBalance();
+  }
+});
