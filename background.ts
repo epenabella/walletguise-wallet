@@ -5,7 +5,6 @@ import bs58 from 'bs58';
 import { connectionStore } from "~shared/utils/networkStore";
 import { get } from "svelte/store"
 import { Storage } from "@plasmohq/storage"
-const connection = get(connectionStore);
 
 // RAM-only store
 // const sessionSecureStorage = new SecureStorage({area: 'session'}) //sess.Storage({ area: "session" }) // survives SW restarts
@@ -111,6 +110,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         if (!sessionWallet) return sendResponse({ error: "locked" });
 
         try {
+          const sendSendConnection = get(connectionStore)
           const tx = Transaction.from(Buffer.from(msg.tx));
 
           // 1. Validate Fee Payer
@@ -128,14 +128,14 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 
           // 4. Send to network
           const serializedTx = tx.serialize();
-          const signature = await connection.sendRawTransaction(
+          const signature = await sendSendConnection.sendRawTransaction(
             serializedTx,
             msg.options
           );
 
           // 5. Confirm if requested
           if (msg.options?.preflightCommitment) {
-            await connection.confirmTransaction(
+            await sendSendConnection.confirmTransaction(
               signature,
               msg.options.preflightCommitment
             );
@@ -154,8 +154,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           // TODO:// use session!
           // sessionWallet.publicKey,
         // const pk = new PublicKey(sessionWallet.publicKey)      // ← convert
+        const balanceConnection = get(connectionStore);
 
-        const lamports = await connection.getBalance(
+        const lamports = await balanceConnection.getBalance(
           sessionWallet.publicKey,          // ← use the cached PublicKey
           "confirmed"
         )
