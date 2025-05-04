@@ -24,7 +24,7 @@
 
 <div class="p-2">
   <div class="flex justify-between items-center">
-  <label class="block text-sm font-medium mb-1 dark:text-white">Network</label>
+  <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Network</label>
   <div class="relative">
     <button
       id="networkDropdownButton"

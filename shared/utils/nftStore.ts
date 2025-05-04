@@ -1,7 +1,6 @@
-import { get, type Writable, writable } from "svelte/store"
-import { type Cluster, connectionStore } from "~shared/utils/networkStore"
+import { get, writable } from "svelte/store"
+import { connectionStore } from "~shared/utils/networkStore"
 import type { NFTResponse } from "~shared/types/NFT.types"
-import { kpStore } from "~shared/utils/kpStore"
 import { fetchWalletNFTs } from "~features/nfts/nftService"
 
 export const nftData = writable<NFTResponse | null>(null);

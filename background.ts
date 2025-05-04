@@ -35,21 +35,6 @@ async function restoreSession() {
 // Initialize on service worker start
 restoreSession().catch(console.error);
 
-// Watch for changes to the session wallet
-// sessionStorage.watch({
-//   [SESSION_KEY]: (change) => {
-//     console.log("Session wallet updated from storage change: " + JSON.stringify(change.newValue));
-//
-//     if (change.newValue) {
-//       // sessionWallet = Keypair.fromSecretKey(bs58.decode(change.newValue));
-//       console.log("Session wallet updated from storage change: " + change.newValue);
-//     } else {
-//       // sessionWallet = null;
-//       console.log("Session wallet cleared from storage change");
-//     }
-//   }
-// });
-
 
 // Helper: open extension popup when user initiates connect from web‑app
 async function openExtensionPopup() {
@@ -150,23 +135,16 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         break;
       }
       case "walletguise#getBalance": {
-        // await restoreFromBlob();
         if (!sessionWallet) return sendResponse({ error: "locked" })
-          // TODO:// use session!
-          // sessionWallet.publicKey,
-
-        // const pk = new PublicKey(sessionWallet.publicKey)      // ← convert
-        console.log('balance msg.rpcUrl: ', JSON.stringify(msg.rpcUrl));
-        console.log('balance msg: ', JSON.stringify(msg));
         const balanceConnection = new Connection(msg.rpcUrl, "confirmed");
         console.log('balanceConnection: ', balanceConnection.rpcEndpoint);
 
         const lamports = await balanceConnection.getBalance(
-          sessionWallet.publicKey,          // ← use the cached PublicKey
+          sessionWallet.publicKey,
           "confirmed"
         )
 
-        sendResponse({ lamports })        // <— return raw lamports
+        sendResponse({ lamports })
         break
       }
     }

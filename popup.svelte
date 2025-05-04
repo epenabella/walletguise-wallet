@@ -7,31 +7,16 @@
   import { wgLocalSecureStore, STORAGE_KEYS } from "~shared/utils/wgAppStore"
   import { onMount } from "svelte"
   import NavMenu from "~shared/components/NavMenu.svelte"
-  import {sol} from '~shared/utils/balanceStore';
   import {kpStore} from '~shared/utils/kpStore'
   import Balance from "~shared/components/sub-views/Balance.svelte"
   import { clusterStore } from "~shared/utils/networkStore"
-
-  /* ---------- secure-storage setup ---------- */
-
-  // $: {
-  //     console.log('kp changed: ' + JSON.stringify(kp?.publicKey))
-  // }
-  // current decrypted key-pair
-  let showQr = false
-
+  import { restoreWallet } from "~shared/utils/backgroundHelper"
 
   chrome.storage.session.get("wg_session_wallet", async (obj) => {
-    console.log("session obj: " + JSON.stringify(obj))
-    if (obj.wg_session_wallet) {
-      $kpStore = Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet))
-      console.log("kp found: " + JSON.stringify($kpStore?.publicKey))
-
-      await chrome.runtime.sendMessage({
-        type: "walletguise#restore",
-        secretKey: obj.wg_session_wallet        // same base-58 string
-      })
-    }
+      if (obj.wg_session_wallet) {
+          await restoreWallet(obj.wg_session_wallet);
+          kpStore.set(Keypair.fromSecretKey(bs58.decode(obj.wg_session_wallet)))
+      }
   })
 
 

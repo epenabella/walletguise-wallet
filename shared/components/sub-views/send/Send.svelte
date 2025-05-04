@@ -120,8 +120,7 @@
       successMessage = `Transaction sent successfully! Signature: ${signature.substring(0, 10)}...`; // Show partial signature
       recipient = ''; // Clear form
       amount = '';
-      // Optionally, refresh balance after sending
-      // balance = await getBalance();
+
       setTimeout(fetchBalance, 750);
     } catch (err) {
       console.error("Transaction Error:", err);
@@ -141,17 +140,6 @@
 
 <div class="p-2">
   <h2 class="text-lg font-semibold mb-2 dark:text-white">Send</h2>
-
-  <!--{#if errorMessage}-->
-  <!--  <div class="p-3 mb-3 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">-->
-  <!--    {errorMessage}-->
-  <!--  </div>-->
-  <!--{/if}-->
-  <!--{#if successMessage}-->
-  <!--  <div class="p-3 mb-3 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">-->
-  <!--    {successMessage}-->
-  <!--  </div>-->
-  <!--{/if}-->
 
   <form on:submit|preventDefault={validateAndShowModal} class="space-y-4 min-h-[268px] max-h-[268px]">
     <div>
