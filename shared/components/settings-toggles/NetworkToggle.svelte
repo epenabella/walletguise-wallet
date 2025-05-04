@@ -11,9 +11,6 @@
   function setCluster(newCluster: Cluster) {
     clusterStore.set(newCluster)
     dropdownOpen = false
-
-    // Send message to background script to rebuild Connection
-    // chrome.runtime.sendMessage({ type: "walletguise#setCluster", cluster: newCluster })
   }
 
   // Helper to format cluster name for display

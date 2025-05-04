@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js"
+  import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js"
   import type { SendTransactionOptions } from "~shared/types/WalletGuiseConnect.types"
   import { balanceStore, fetchBalance } from "~shared/utils/balanceStore"
   import {kpStore} from "~shared/utils/kpStore"
