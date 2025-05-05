@@ -3,6 +3,7 @@ import { derivePath } from "ed25519-hd-key"   // tiny lib, Phantom uses it
 import { Keypair } from "@solana/web3.js"
 import { wordlist } from '@scure/bip39/wordlists/english';
 import type { SolanaSignInInputWithRequiredFields } from "@solana/wallet-standard-util/src/signIn"
+import type { SolanaSignInInput } from "~shared/types/WalletGuiseConnect.types"
 
 
 export async function sha256(msg: string): Promise<string> {
@@ -153,6 +154,26 @@ const REQUEST_ID = '(?:\\nRequest ID: (?<requestId>[^\\n]+))?';
 const RESOURCES = '(?:\\nResources:(?<resources>(?:\\n- [^\\n]+)*))?';
 const FIELDS = `${URI}${VERSION}${CHAIN_ID}${NONCE}${ISSUED_AT}${EXPIRATION_TIME}${NOT_BEFORE}${REQUEST_ID}${RESOURCES}`;
 const MESSAGE = new RegExp(`^${DOMAIN}${ADDRESS}${STATEMENT}${FIELDS}\\n*$`);
+
+export function createSignInMessage(
+  input: SolanaSignInInput,
+  address: string
+): Uint8Array {
+  // Enforce required fields
+  const fullInput: SolanaSignInInputWithRequiredFields = {
+    domain: input.domain || window.location.host,
+    address, // MUST come from connected account
+    // uri: input.uri || window.location.origin,
+    // version: input.version || "1",
+    // chainId: input.chainId || "solana:mainnet",
+    // nonce: input.nonce || crypto.randomUUID(),
+    // issuedAt: input.issuedAt || new Date().toISOString(),
+    ...input,
+  }
+
+  // Use official message builder
+  return new TextEncoder().encode(createSignInMessageText(fullInput))
+}
 
 export function parseSignInMessage(message: Uint8Array): SolanaSignInInputWithRequiredFields | null {
   const text = new TextDecoder().decode(message);

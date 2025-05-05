@@ -1,36 +1,20 @@
-import { PublicKey, type Transaction } from "@solana/web3.js"
-import type { PlasmoCSConfig } from "plasmo"
-import nacl from "tweetnacl"
-import {
-  registerWallet,
-  StandardConnect,
-  StandardEvents,
-  type IdentifierArray,
-  type IdentifierRecord,
-  type IdentifierString,
-  type ReadonlyUint8Array,
-  type StandardConnectFeature,
-  type StandardConnectInput,
-  type StandardConnectMethod,
-  type StandardConnectOutput,
-  type WalletAccount,
-  type WalletIcon,
-  type WalletVersion
-} from "wallet-standard"
+import type {
+  SolanaSignMessageInput,
+  SolanaSignMessageOutput
+} from "@solana/wallet-standard-features"
+import { PublicKey, type Transaction } from "@solana/web3.js";
+import type { PlasmoCSConfig } from "plasmo";
+import nacl from "tweetnacl";
+import { registerWallet, StandardConnect, StandardEvents, type IdentifierArray, type IdentifierRecord, type IdentifierString, type ReadonlyUint8Array, type StandardConnectFeature, type StandardConnectInput, type StandardConnectMethod, type StandardConnectOutput, type WalletAccount, type WalletIcon, type WalletVersion } from "wallet-standard";
 
-import { logoString } from "~shared/components/icons/logoString"
-import {
-  WALLET_STANDARD_SOLANA_CHAIN_KEYS,
-  WALLETGUISE_FEATURE_KEYS,
-  type SendTransactionOptions,
-  type SolanaSignInInput,
-  type SolanaSignInInputWithRequiredFields,
-  type SolanaSignInOutput,
-  type WalletGuiseFeatures,
-  type WalletGuiseWallet
-} from "~shared/types/WalletGuiseConnect.types"
-import { createSignInMessageText, generateNonce, parseSignInMessage } from "~shared/utils/crypto"
-import { createSignInMessage } from "@solana/wallet-standard-util"
+
+
+import { logoString } from "~shared/components/icons/logoString";
+import { WALLET_STANDARD_SOLANA_CHAIN_KEYS, WALLETGUISE_FEATURE_KEYS, type SendTransactionOptions, type SolanaSignInInput, type SolanaSignInInputWithRequiredFields, type SolanaSignInOutput, type WalletGuiseFeatures, type WalletGuiseWallet } from "~shared/types/WalletGuiseConnect.types";
+import { createSignInMessage, createSignInMessageText, generateNonce, parseSignInMessage } from "~shared/utils/crypto";
+
+
+
 
 
 export const config: PlasmoCSConfig = {
@@ -116,18 +100,12 @@ class WalletGuiseImpl implements WalletGuiseWallet {
   /** Attempt to connect. If extension is locked, open the popup and
    *  wait for the user to finish unlock / onboarding. */
   async connect(input?: StandardConnectInput): Promise<StandardConnectOutput> {
-    // if (this.isConnected && this.publicKey) return this.publicKey
-
     if (this.accounts[0]) return { accounts: this._accounts }
-
-    debugger
 
     const attempt = async () =>
       this.bridgeCall<{ publicKey?: string; error?: string }>(
         "walletguise#connect"
       )
-
-    debugger
 
     let { publicKey, error } = await attempt()
     if (error === "locked") {
@@ -163,6 +141,7 @@ class WalletGuiseImpl implements WalletGuiseWallet {
     // if (!this.isConnected) return
     await this.bridgeCall("walletguise#disconnect")
     this.publicKey = null
+    this._accounts.length = 0
     // this.isConnected = false
     this.emit("disconnect", null)
   }
@@ -200,25 +179,14 @@ class WalletGuiseImpl implements WalletGuiseWallet {
   }
 
   async signIn(input?: SolanaSignInInput): Promise<SolanaSignInOutput[]> {
-    if (!this.publicKey) {
-      await this.connect()
-    }
+    await this.ensureConnected()
 
-    if (!this.publicKey || this._accounts.length === 0) {
-      throw new Error("Not connected")
-    }
-
-    // Create the signIn message according to SIWS spec
-    // This message format follows a specific pattern
-    // const domain = input?.domain || window.location.host;
     const account = this._accounts[0]
 
-    const messageBytes = this.createSignInMessage(input, account.address)
-    if (!parseSignInMessage(messageBytes)) throw new Error('Malformed SIWS message');
-    // const text = parseSignInMessageText(input)
-    // const message = createSignInMessageText(input);
-
-    debugger
+    // Create the signIn message according to SIWS spec
+    const messageBytes = createSignInMessage(input, account.address)
+    if (!parseSignInMessage(messageBytes))
+      throw new Error("Malformed SIWS message")
 
     const { signature, error } = await this.bridgeCall(
       "walletguise#signMessage",
@@ -228,8 +196,6 @@ class WalletGuiseImpl implements WalletGuiseWallet {
       }
     )
 
-    debugger
-
     if (error) throw new Error(error)
 
     const output = {
@@ -238,37 +204,56 @@ class WalletGuiseImpl implements WalletGuiseWallet {
       signedMessage: messageBytes
     }
 
-    // console.log(`is valid: ${isValid}`)
-
-    // Return the output in the format expected by SIWS
     return [output]
   }
 
-  async signMessage() {
-    throw new Error("Not implemented")
+
+
+  async signMessage(...inputs: SolanaSignMessageInput[]) {
+    await this.ensureConnected()
+
+    const active = this._accounts[0];
+    const outputs = inputs.map(async ({ account = active, message }) => {
+      // ---- basic safety checks -------------------------------------------
+      if (account.address !== active.address)
+        throw new Error("Account mismatch");
+      if (!account.features.includes("solana:signMessage"))
+        throw new Error("Wallet does not support solana:signMessage");
+      if (!(message instanceof Uint8Array))
+        throw new Error("`message` must be a Uint8Array");
+      if (message.length === 0) throw new Error("Message may not be empty");
+
+      // ---- delegate to the background signer -----------------------------
+      const { signature, error } = await this.bridgeCall<{
+        signature?: number[];
+        error?: string;
+      }>("walletguise#signMessage", {
+        message: Array.from(message), // structured‑clone friendly
+        account: account.address
+      });
+
+      if (error) throw new Error(error);
+
+      return {
+        signedMessage: message,
+        signature: new Uint8Array(signature!)
+      };
+    });
+
+    return await Promise.all(outputs);
+  }
+
+  private async ensureConnected() {
+    if (!this.publicKey) {
+      await this.connect()
+    }
+
+    if (!this.publicKey || this._accounts.length === 0) {
+      throw new Error("Not connected")
+    }
   }
 
   readonly isConnected: boolean
-
-  private createSignInMessage(
-    input: SolanaSignInInput,
-    address: string
-  ): Uint8Array {
-    // Enforce required fields
-    const fullInput: SolanaSignInInputWithRequiredFields = {
-      domain: input.domain || window.location.host,
-      address, // MUST come from connected account
-      // uri: input.uri || window.location.origin,
-      // version: input.version || "1",
-      // chainId: input.chainId || "solana:mainnet",
-      // nonce: input.nonce || crypto.randomUUID(),
-      // issuedAt: input.issuedAt || new Date().toISOString(),
-      ...input,
-    }
-
-    // Use official message builder
-    return new TextEncoder().encode(createSignInMessageText(fullInput))
-  }
 }
 
 // Inject once
