@@ -5,10 +5,9 @@
     import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
     import bs58 from "bs58"
     import { importFromMnemonic, sha256 } from "~shared/utils/crypto"
-    import type { SecureStorage } from "@plasmohq/storage/secure"
     import WgLogo from "~shared/components/icons/WgLogo.svelte"
     import { kpStore } from "~shared/utils/kpStore"
-    import { unlockWallet } from "~shared/utils/backgroundHelper"
+    import { saveWallet, unlockWallet } from "~shared/utils/backgroundHelper"
     import { STORAGE_KEYS } from "~shared/utils/constants"
 
     // export let secure: SecureStorage
@@ -72,8 +71,8 @@
 
         await chrome.storage.session.set({
             wg_session_wallet: bs58.encode(tempKp.secretKey)
-        }).then(res => {
-            unlockWallet(password).then(r => {
+        }).then(async res => {
+            saveWallet(password, bs58.encode(tempKp.secretKey), await sha256(password)).then(r => {
                 if (tempKp) {
                     kpStore.set(tempKp);
                 }
@@ -81,6 +80,14 @@
             }).catch(e => {
                 console.error('login unlock error: ' + JSON.stringify(e))
             });
+            // unlockWallet(password).then(r => {
+            //     if (tempKp) {
+            //         kpStore.set(tempKp);
+            //     }
+            //     dispatch("success");
+            // }).catch(e => {
+            //     console.error('login unlock error: ' + JSON.stringify(e))
+            // });
         })
 
 

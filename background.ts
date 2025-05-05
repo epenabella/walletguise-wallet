@@ -50,11 +50,29 @@ async function openExtensionPopup() {
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   ;(async () => {
-    await restoreSession();
+
+    if (msg.type !== "walletguise#saveWallet") {
+      await restoreSession();
+    };
+
     switch (msg.type) {
       case "walletguise#restore": {             // NEW
         const { secretKey } = msg               // base-58 string
         sessionWallet = Keypair.fromSecretKey(bs58.decode(secretKey))
+        return sendResponse({ ok: true })
+      }
+      case "walletguise#saveWallet": {             // NEW
+        const { password, hash, privateKey } = msg               // base-58 string
+        // await wgLocalSecureStore.setPassword(msg.password)
+        // await wgLocalSecureStore.set(STORAGE_KEYS.HASH, hash);
+        // await wgLocalSecureStore.set(STORAGE_KEYS.ENC_WALLET, privateKey);
+        //
+        // await chrome.storage.session.set({
+        //   wg_session_wallet: privateKey
+        // });
+        //
+        // await sessionStorage.set(SESSION_KEY, privateKey);
+        sessionWallet = Keypair.fromSecretKey(bs58.decode(privateKey))
         return sendResponse({ ok: true })
       }
       case "walletguise#unlock": {
@@ -72,8 +90,8 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         // Store in secure session storage for persistence
         await sessionStorage.set(SESSION_KEY, bs58.encode(sessionWallet.secretKey));
 
-
-        sendResponse({ ok: true })
+        sendResponse({ publicKey: sessionWallet.publicKey.toBase58() })
+        // sendResponse({ ok: true })
         break
       }
       case "walletguise#connect": {

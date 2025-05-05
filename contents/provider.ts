@@ -1,6 +1,30 @@
+import { PublicKey, type Transaction } from "@solana/web3.js";
 import type { PlasmoCSConfig } from "plasmo";
-import { PublicKey, type Transaction } from "@solana/web3.js"
-import { type SendTransactionOptions, type WalletGuiseWallet } from "~shared/types/WalletGuiseConnect.types"
+import {
+  registerWallet,
+  StandardConnect,
+  StandardEvents,
+  type IdentifierArray,
+  type IdentifierRecord,
+  type StandardConnectFeature,
+  type StandardConnectInput,
+  type StandardConnectMethod,
+  type StandardConnectOutput,
+  type WalletAccount,
+  type WalletIcon,
+  type WalletVersion,
+  type IdentifierString
+} from "wallet-standard"
+
+
+
+import { logoString } from "~shared/components/icons/logoString"
+import {
+  WALLETGUISE_FEATURE_KEYS,
+  type SendTransactionOptions,
+  type WalletGuiseFeatures,
+  type WalletGuiseWallet, WALLET_STANDARD_SOLANA_CHAIN_KEYS
+} from "~shared/types/WalletGuiseConnect.types"
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -9,10 +33,58 @@ export const config: PlasmoCSConfig = {
 
 class WalletGuiseImpl implements WalletGuiseWallet {
   publicKey: PublicKey | null = null
-  isConnected = false
+  // isConnected = false
+  private _accounts: WalletAccount[] = [];
+  get accounts(): readonly WalletAccount[] {
+    return this._accounts;
+  }
+  // readonly accounts: readonly WalletAccount[] = []
+  readonly chains: IdentifierArray = [
+    "solana:mainnet",
+    "solana:testnet",
+    "solana:devnet",
+    "solana:localnet"
+  ]
+  readonly features: IdentifierRecord<unknown> = {
+    [StandardConnect]: {
+      version: '1.0.0',
+      connect: this.connect.bind(this),
+      disconnect: this.disconnect.bind(this),
+    },
+    [StandardEvents]: {
+      version: '1.0.0',
+      on: this.on.bind(this),
+    },
+    "solana:signAndSendTransaction": {
+      version: '1.0.0',
+      supportedTransactionVersions: ['legacy'],
+      signAndSendTransaction: this.signAndSendTransaction.bind(this),
+    },
+    "solana:signIn": {
+      version: '1.0.0',
+      supportedTransactionVersions: ['legacy'],
+      signIn: this.signIn.bind(this),
+    },
+    "solana:signTransaction": {
+      version: '1.0.0',
+      supportedTransactionVersions: ['legacy'],
+      signTransaction: this.signAndSendTransaction.bind(this),
+    },
+    "solana:signMessage": {
+      version: '1.0.0',
+      supportedTransactionVersions: ['legacy'],
+      signMessage: this.signMessage.bind(this),
+    },
+    // Add other features as needed
+  };
+  readonly icon: WalletIcon = logoString;
+  readonly name: string = "WalletGuise"
+  readonly version: WalletVersion = "1.0.0"
+
   private listeners = {
     connect: new Set<(pk: PublicKey) => void>(),
-    disconnect: new Set<() => void>()
+    disconnect: new Set<() => void>(),
+    change: new Set<() => void>()
   }
 
   /**
@@ -35,35 +107,51 @@ class WalletGuiseImpl implements WalletGuiseWallet {
 
   /** Attempt to connect. If extension is locked, open the popup and
    *  wait for the user to finish unlock / onboarding. */
-  async connect(): Promise<PublicKey> {
-    if (this.isConnected && this.publicKey) return this.publicKey
+  async connect(input?: StandardConnectInput) : Promise<StandardConnectOutput> {
+    // if (this.isConnected && this.publicKey) return this.publicKey
 
-    const attempt = async () =>
-      this.bridgeCall<{ publicKey?: string; error?: string }>("walletguise#connect")
+      if (this.accounts[0]) return { accounts: this._accounts }
 
-    let { publicKey, error } = await attempt()
-    if (error === "locked") {
-      await this.bridgeCall("walletguise#openPopup")
-      const deadline = Date.now() + 2 * 60 * 1000
-      while (Date.now() < deadline) {
-        await new Promise((r) => setTimeout(r, 500))
-        ;({ publicKey, error } = await attempt())
-        if (publicKey) break
+    debugger;
+
+      const attempt = async () =>
+        this.bridgeCall<{ publicKey?: string; error?: string }>("walletguise#connect")
+
+      debugger;
+
+      let { publicKey, error } = await attempt()
+      if (error === "locked") {
+        await this.bridgeCall("walletguise#openPopup")
+        const deadline = Date.now() + 2 * 60 * 1000
+        while (Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 500));
+          ({ publicKey, error } = await attempt())
+          if (publicKey) break
+        }
       }
-    }
-    if (!publicKey) throw new Error(error ?? "Connection failed")
+      if (!publicKey) throw new Error(error ?? "Connection failed")
 
-    this.publicKey = new PublicKey(publicKey)
-    this.isConnected = true
-    this.emit("connect", this.publicKey)
-    return this.publicKey
-  }
+      this.publicKey = new PublicKey(publicKey)
+
+      const account: WalletAccount = {
+        address: publicKey,
+        publicKey: this.publicKey.toBytes(),
+        chains: this.chains,
+        features: Object.keys(this.features).map(featureKey => featureKey as IdentifierString)
+      }
+
+      this._accounts.push(account)
+      // this.isConnected = true
+      this.emit("connect", this.publicKey)
+      // return this.publicKey
+      return { accounts: this._accounts }
+    }
 
   async disconnect(): Promise<void> {
-    if (!this.isConnected) return
+    // if (!this.isConnected) return
     await this.bridgeCall("walletguise#disconnect")
     this.publicKey = null
-    this.isConnected = false
+    // this.isConnected = false
     this.emit("disconnect", null)
   }
 
@@ -75,7 +163,7 @@ class WalletGuiseImpl implements WalletGuiseWallet {
     transaction: Transaction,
     options?: SendTransactionOptions
   ): Promise<{ signature: string }> {
-    if (!this.isConnected) throw new Error('Not connected');
+    // if (!this.isConnected) throw new Error('Not connected');
 
     // Serialize transaction
     const serializedTx = transaction.serialize({
@@ -98,6 +186,17 @@ class WalletGuiseImpl implements WalletGuiseWallet {
   private emit(ev: "connect" | "disconnect", pk: PublicKey | null) {
     this.listeners[ev].forEach((fn: any) => fn(pk))
   }
+
+  async signIn() {
+    await this.connect();
+  }
+
+  async signMessage() {
+    throw new Error("Not implemented");
+  }
+
+  readonly isConnected: boolean
+
 }
 
 // Inject once
@@ -106,6 +205,7 @@ function injectWalletguise() {
   if (w.walletguise) return
   w.walletguise = new WalletGuiseImpl()
   w.dispatchEvent(new Event("walletguise#initialized"))
+  registerWallet(w.walletguise);
 }
 if (document.readyState === 'complete') {
   injectWalletguise();

@@ -1,11 +1,12 @@
 // backgroundHelper.ts
-import { type Transaction } from "@solana/web3.js";
+import { type Keypair, type Transaction } from "@solana/web3.js"
 import { get } from "svelte/store";
 
 import type { BackgroundResponse, SendTransactionOptions } from "~shared/types/WalletGuiseConnect.types";
 import { ERROR_LOCKED } from '~shared/types/WalletGuiseConnect.types';
 import { kpStore } from "~shared/utils/kpStore";
 import { rpcUrl } from "~shared/utils/networkStore";
+import bs58 from "bs58"
 
 
 
@@ -50,6 +51,10 @@ export async function unlockWallet(password: string): Promise<void> {
       type: 'walletguise#unlock',
       password,
     });
+}
+
+export async function saveWallet(password: string, privateKey: string, hash: string): Promise<void> {
+  await send({ type: 'walletguise#saveWallet', password, privateKey, hash });
 }
 
 export async function restoreWallet(secretKey: string): Promise<void> {
