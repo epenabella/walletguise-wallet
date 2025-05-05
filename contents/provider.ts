@@ -1,17 +1,16 @@
 import type {
   SolanaSignMessageInput,
-  SolanaSignMessageOutput
+  SolanaSignMessageOutput, SolanaSignTransactionInput, SolanaSignTransactionOutput
 } from "@solana/wallet-standard-features"
 import { PublicKey, type Transaction } from "@solana/web3.js";
 import type { PlasmoCSConfig } from "plasmo";
-import nacl from "tweetnacl";
 import { registerWallet, StandardConnect, StandardEvents, type IdentifierArray, type IdentifierRecord, type IdentifierString, type ReadonlyUint8Array, type StandardConnectFeature, type StandardConnectInput, type StandardConnectMethod, type StandardConnectOutput, type WalletAccount, type WalletIcon, type WalletVersion } from "wallet-standard";
 
 
 
 import { logoString } from "~shared/components/icons/logoString";
-import { WALLET_STANDARD_SOLANA_CHAIN_KEYS, WALLETGUISE_FEATURE_KEYS, type SendTransactionOptions, type SolanaSignInInput, type SolanaSignInInputWithRequiredFields, type SolanaSignInOutput, type WalletGuiseFeatures, type WalletGuiseWallet } from "~shared/types/WalletGuiseConnect.types";
-import { createSignInMessage, createSignInMessageText, generateNonce, parseSignInMessage } from "~shared/utils/crypto";
+import { type SendTransactionOptions, type SolanaSignInInput, type SolanaSignInInputWithRequiredFields, type SolanaSignInOutput, type WalletGuiseFeatures, type WalletGuiseWallet } from "~shared/types/WalletGuiseConnect.types";
+import { createSignInMessage, parseSignInMessage } from "~shared/utils/crypto";
 
 
 
@@ -60,7 +59,7 @@ class WalletGuiseImpl implements WalletGuiseWallet {
     "solana:signTransaction": {
       version: "1.0.0",
       supportedTransactionVersions: ["legacy"],
-      signTransaction: this.signAndSendTransaction.bind(this)
+      signTransaction: this.signTransaction.bind(this)
     },
     "solana:signMessage": {
       version: "1.0.0",
@@ -207,6 +206,34 @@ class WalletGuiseImpl implements WalletGuiseWallet {
     return [output]
   }
 
+  async signTransaction(
+    ...inputs: SolanaSignTransactionInput[]
+  ): Promise<readonly SolanaSignTransactionOutput[]> {
+    await this.ensureConnected();
+
+    const outputs =
+      inputs.map(async ({ account, transaction }) => {
+        // Validate that the account is active
+        if (account.address !== this._accounts[0].address)
+          throw new Error("Account mismatch");
+
+        const { signedTransaction, error } = await this.bridgeCall<{
+          signedTransaction?: number[];
+          error?: string;
+        }>("walletguise#signTransaction", {
+          tx: Array.from(transaction),
+          account: account.address
+        });
+
+        if (error) throw new Error(error);
+
+        return {
+          signedTransaction: new Uint8Array(signedTransaction!)
+        };
+      });
+
+    return await Promise.all(outputs);
+  }
 
 
   async signMessage(...inputs: SolanaSignMessageInput[]) {

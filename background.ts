@@ -149,6 +149,34 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         }
         break;
       }
+      case "walletguise#signTransaction": {
+        if (!sessionWallet) return sendResponse({ error: "locked" });
+
+        try {
+          const tx = Transaction.from(Buffer.from(msg.tx));
+
+          // Validate fee payer
+          if (!tx.feePayer?.equals(sessionWallet.publicKey)) {
+            return sendResponse({ error: "Fee payer mismatch" });
+          }
+
+          // Partially sign the transaction
+          tx.partialSign(sessionWallet);
+
+          // Serialize the signed transaction
+          const signedTxBytes = tx.serialize();
+
+          // Return the raw signed transaction as a number[]
+          sendResponse({
+            signedTransaction: Array.from(signedTxBytes)
+          });
+        } catch (error) {
+          console.error("Transaction signing failed:", error);
+          sendResponse({ error: error.message });
+        }
+
+        break;
+      }
       case "walletguise#signAndSend": {
         if (!sessionWallet) return sendResponse({ error: "locked" });
 
