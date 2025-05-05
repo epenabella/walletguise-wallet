@@ -6,6 +6,8 @@ import { connectionStore } from "~shared/utils/networkStore";
 import { get } from "svelte/store"
 import { Storage } from "@plasmohq/storage"
 import { STORAGE_KEYS } from "~shared/utils/constants"
+import nacl from "tweetnacl"
+import { ed25519 } from "@noble/curves/ed25519"
 
 // RAM-only store
 // const sessionSecureStorage = new SecureStorage({area: 'session'}) //sess.Storage({ area: "session" }) // survives SW restarts
@@ -109,6 +111,43 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         await openExtensionPopup()
         sendResponse({ ok: true })
         break
+      }
+      case "walletguise#signMessage": {
+        if (!sessionWallet) return sendResponse({ error: "locked" });
+
+        try {
+          // Get the message from the request
+          const messageBytes = new Uint8Array(msg.message);
+
+          // Validate the account if provided
+          if (msg.account && msg.account !== sessionWallet.publicKey.toBase58()) {
+            return sendResponse({ error: "Account mismatch" });
+          }
+
+
+
+          // Extract only the private key portion (first 32 bytes)
+          const privateKey = sessionWallet.secretKey.slice(0, 32);
+
+          // Sign the message using ed25519 with the correct key length
+          const signature = ed25519.sign(messageBytes, privateKey);
+
+          // const signature = nacl.sign.detached(
+          //   messageBytes,
+          //   sessionWallet.secretKey
+          // );
+
+
+          // Return the signature
+          sendResponse({
+            signature: Array.from(signature),
+            publicKey: sessionWallet.publicKey.toBase58()
+          });
+        } catch (error) {
+          console.error('Message signing failed:', error);
+          sendResponse({ error: error.message });
+        }
+        break;
       }
       case "walletguise#signAndSend": {
         if (!sessionWallet) return sendResponse({ error: "locked" });

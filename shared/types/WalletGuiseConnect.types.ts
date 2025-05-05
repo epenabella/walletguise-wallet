@@ -33,7 +33,30 @@ export const WALLETGUISE_FEATURE_KEYS = {
   SOLANA_SIGN_MESSAGE: "solana:signMessage"
 }
 
+export interface SolanaSignInInput {
+  domain?: string;         // The domain requesting the sign-in
+  statement?: string;      // Human-readable statement for the user to approve
+  uri?: string;            // URI for the sign-in request
+  version?: string;        // Version of SIWS being used (default is "1")
+  chainId?: string;        // Chain ID (e.g., "solana:mainnet")
+  nonce?: string;          // Random string to prevent replay attacks
+  address?: string;        // Optional Solana address for sign-in
+  issuedAt?: string;       // ISO timestamp of when the request was issued
+  expirationTime?: string; // Optional expiration time
+  notBefore?: string;      // Optional not-before time
+  requestId?: string;      // Optional request ID
+  resources?: string[];    // Optional array of resources
+}
 
+// Output interface returned from signIn
+export interface SolanaSignInOutput {
+  account: WalletAccount;
+  signature: Uint8Array;    // The signature bytes
+  signedMessage: Uint8Array; // The message that was signed
+}
+
+export type SolanaSignInInputWithRequiredFields = SolanaSignInInput &
+  Required<Pick<SolanaSignInInput, 'domain' | 'address'>>;
 
 export interface WalletGuiseFeatures {
   'wallet:connect': {
