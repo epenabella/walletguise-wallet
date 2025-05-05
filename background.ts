@@ -10,6 +10,11 @@ import { STORAGE_KEYS } from "~shared/utils/constants"
 import { decrypt, sha256 } from "~shared/utils/crypto"
 import { connectionStore, rpcUrl, waitForClusterInitialization } from "~shared/utils/networkStore"
 import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
+import {
+  createConfirmationRequest,
+  initBackgroundListeners,
+  waitForRequestResolution
+} from "~shared/utils/confirmationManager"
 
 // RAM-only store
 // const sessionSecureStorage = new SecureStorage({area: 'session'}) //sess.Storage({ area: "session" }) // survives SW restarts
@@ -17,6 +22,15 @@ const SESSION_KEY = "wg_session_wallet" // NEW
 const sessionStorage = new Storage({ area: "session" })
 
 let sessionWallet: Keypair | null = null
+
+initBackgroundListeners();
+
+function isPopupOpen(): boolean {
+  if (!chrome.extension.getViews) return false;
+
+  const popupViews = chrome.extension.getViews({ type: 'popup' });
+  return popupViews.length > 0;
+}
 
 async function restoreSession() {
   if (sessionWallet) return
@@ -42,7 +56,9 @@ restoreSession().catch(console.error)
 
 // Helper: open extension popup when user initiates connect from web‑app
 async function openExtensionPopup() {
-  if (chrome.action?.openPopup) {
+
+
+  if (chrome.action?.openPopup && !isPopupOpen()) {
     // Since Chrome 108 – opens the action popup programmatically
     await chrome.action.openPopup()
   } else {
@@ -54,7 +70,7 @@ async function openExtensionPopup() {
   }
 }
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   ;(async () => {
     if (msg.type !== "walletguise#saveWallet") {
       await restoreSession()
@@ -139,6 +155,20 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           ) {
             return sendResponse({ error: "Account mismatch" })
           }
+
+
+          const requestId = await createConfirmationRequest(
+            "signMessage",
+            { message: msg.message, account: msg.account },
+            {
+              origin: sender.origin ?? "Unknown",
+              tabId: sender.tab?.id,
+              favicon: sender.tab?.favIconUrl
+            }
+          )
+
+          await openExtensionPopup()
+          await waitForRequestResolution(requestId)
 
           // Extract only the private key portion (first 32 bytes)
           const privateKey = sessionWallet.secretKey.slice(0, 32)
@@ -253,5 +283,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   })()
   return true
 })
+
+
 
 restoreSession().catch(console.error)

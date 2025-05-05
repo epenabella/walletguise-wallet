@@ -12,6 +12,15 @@
   import { clusterStore } from "~shared/utils/networkStore"
   import { restoreWallet } from "~shared/utils/backgroundHelper"
   import { STORAGE_KEYS } from "~shared/utils/constants"
+  import {
+      initPopupListeners,
+      currentRequestStore,
+      approveRequest,
+      rejectRequest
+  } from "~shared/utils/confirmationManager"
+  import { get } from "svelte/store"
+  import BackgroundConfirmationModal from "~shared/components/sub-views/BackgroundConfirmationModal.svelte"
+
 
   let mounted = false;
 
@@ -46,6 +55,15 @@
     }
   })
 
+  function onApprove() {
+      const req = get(currentRequestStore);
+      if (req) approveRequest(req.id)
+  }
+  function onReject() {
+      const req = get(currentRequestStore);
+      if (req) rejectRequest(req.id)
+  }
+
 
   onMount(() => {
       document.documentElement.classList.toggle("dark", true)
@@ -61,6 +79,7 @@
           mounted = true;
           return;
       })
+      initPopupListeners()
   })
 </script>
 
@@ -79,14 +98,22 @@
         </div>
 
     {:else}
+        {#if $currentRequestStore}
+            <BackgroundConfirmationModal
+              request={$currentRequestStore}
+              onApprove={onApprove}
+              onReject={onReject}
+            />
+        {:else}
 
-        <div class="min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] flex">
-            <NavMenu />
-            <div class="flex flex-col min-h-[380px] max-h-[380px] min-w-[296px] max-w-[296px] w-[296px]">
-                <Balance />
-                <AuthView />
+            <div class="min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] flex">
+                <NavMenu />
+                <div class="flex flex-col min-h-[380px] max-h-[380px] min-w-[296px] max-w-[296px] w-[296px]">
+                    <Balance />
+                    <AuthView />
+                </div>
             </div>
-        </div>
+        {/if}
     {/if}
 </div>
 
