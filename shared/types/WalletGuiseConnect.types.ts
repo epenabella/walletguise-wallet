@@ -9,6 +9,11 @@ import type {
   StandardConnectInput,
   StandardConnectOutput
 } from "wallet-standard"
+import type {
+  SolanaSignAndSendTransactionInput,
+  SolanaSignAndSendTransactionOutput,
+  SolanaSignMessageInput, SolanaSignMessageOutput, SolanaSignTransactionInput, SolanaSignTransactionOutput
+} from "@solana/wallet-standard-features"
 
 export const ERROR_LOCKED = "locked"
 
@@ -94,11 +99,22 @@ export interface WalletGuiseWallet extends Wallet {
     event: "connect" | "disconnect",
     callback: (publicKey: PublicKey | null) => void
   ): void
+
+  signIn(input?: SolanaSignInInput): Promise<SolanaSignInOutput[]>
+  signTransaction(
+    ...inputs: SolanaSignTransactionInput[]
+  ): Promise<readonly SolanaSignTransactionOutput[]>
+
+  //(...inputs: readonly SolanaSignMessageInput[]) => Promise<readonly SolanaSignMessageOutput[]>;
+
+  signMessage(
+    ...inputs: readonly SolanaSignMessageInput[]
+  ): Promise<readonly SolanaSignMessageOutput[]>
   /** Sign + send a serialized transaction */
   signAndSendTransaction(
-    transaction: Transaction,
-    options?: SendTransactionOptions
-  ): Promise<{ signature: string }>
+    ...inputs: SolanaSignAndSendTransactionInput[]
+  ): Promise<readonly SolanaSignAndSendTransactionOutput[]>
+
   /** Reactive props – updated internally */
   readonly isConnected: boolean
   readonly publicKey: PublicKey | null

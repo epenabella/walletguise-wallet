@@ -51,3 +51,12 @@ connectionStore.subscribe(async (c) => {
     await fetchBalance();
   }
 });
+
+export const waitForClusterInitialization = new Promise<void>((resolve) => {
+  const unsubscribe = clusterStore.subscribe((cluster) => {
+    if (cluster) {
+      unsubscribe();
+      resolve();
+    }
+  });
+});
