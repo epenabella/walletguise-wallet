@@ -31,7 +31,7 @@ export interface ConfirmationRequest {
 
 type RequestMap = Record<string, ConfirmationRequest>
 
-const REQUESTS_KEY = "wallet_confirmation_requests"
+export const REQUESTS_KEY = "wallet_confirmation_requests"
 const REQUEST_TIMEOUT = 120_000 // 2 min
 
 // ------------------------------------------------------------------
@@ -306,4 +306,40 @@ function extractProgramIds(payload: any): string[] | undefined {
     /* ignore */
   }
   return undefined
+}
+
+export async function rejectAllRequests(): Promise<number> {
+  try {
+    // Get all current requests
+    const map = await getRequestMap();
+    let rejectedCount = 0;
+    let mutated = false;
+
+    // Find and reject all pending requests
+    for (const [id, req] of Object.entries(map)) {
+      if (req.status === "pending") {
+        map[id] = {
+          ...req,
+          status: "rejected",
+          response: { error: "Rejected due to network change" }
+        };
+        rejectedCount++;
+        mutated = true;
+      }
+    }
+
+    // Save the updated request map if any changes were made
+    if (mutated) {
+      await putRequestMap(map);
+    }
+
+    // Reset the current request store
+    currentRequestStore.set(null);
+
+    console.log(`Rejected ${rejectedCount} pending requests due to network change`);
+    return rejectedCount;
+  } catch (error) {
+    console.error("Error rejecting all requests:", error);
+    throw error;
+  }
 }

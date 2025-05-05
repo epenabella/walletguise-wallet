@@ -5,6 +5,7 @@ import { wgLocalStorage } from "~shared/utils/wgAppStore";
 import { Metaplex } from "@metaplex-foundation/js"
 import { nftData } from "~shared/utils/nftStore"
 import { STORAGE_KEYS } from "~shared/utils/constants"
+import { REQUESTS_KEY } from "~shared/utils/confirmationManager"
 
 export type Cluster = "mainnet-beta" | "devnet" | "testnet";
 

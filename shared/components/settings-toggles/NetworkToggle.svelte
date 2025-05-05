@@ -1,5 +1,6 @@
 <script lang="ts">
   import { clusterStore, type Cluster } from "~shared/utils/networkStore"
+  import { rejectAllRequests } from "~shared/utils/confirmationManager"
 
   export let dropdownOpen = false
 
@@ -9,8 +10,10 @@
   }
 
   function setCluster(newCluster: Cluster) {
-    clusterStore.set(newCluster)
-    dropdownOpen = false
+    rejectAllRequests().then(() => {
+      clusterStore.set(newCluster)
+      dropdownOpen = false
+    })
   }
 
   // Helper to format cluster name for display
