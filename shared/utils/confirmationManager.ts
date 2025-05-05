@@ -187,7 +187,7 @@ export function waitForRequestResolution(id: string): Promise<ConfirmationReques
 // popup & background init
 // ------------------------------------------------------------------
 
-export function initBackgroundListeners(): void {
+export function initBackgroundConfirmationListeners(): void {
   // GC expired / completed requests once a minute
   setInterval(async () => {
     const now = Date.now()

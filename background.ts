@@ -1,20 +1,24 @@
-import { ed25519 } from "@noble/curves/ed25519"
-import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js"
-import bs58 from "bs58"
-import { get } from "svelte/store"
-import nacl from "tweetnacl"
+import { ed25519 } from "@noble/curves/ed25519";
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import bs58 from "bs58";
+import { get } from "svelte/store";
+import { Storage } from "@plasmohq/storage";
 
-import { Storage } from "@plasmohq/storage"
 
-import { STORAGE_KEYS } from "~shared/utils/constants"
-import { decrypt, sha256 } from "~shared/utils/crypto"
-import { connectionStore, rpcUrl, waitForClusterInitialization } from "~shared/utils/networkStore"
-import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
+
 import {
   createConfirmationRequest,
-  initBackgroundListeners,
+  initBackgroundConfirmationListeners,
   waitForRequestResolution
 } from "~shared/utils/confirmationManager"
+import { STORAGE_KEYS } from "~shared/utils/constants";
+import { decrypt, sha256 } from "~shared/utils/crypto";
+import { connectionStore, rpcUrl, waitForClusterInitialization } from "~shared/utils/networkStore";
+import { wgLocalSecureStore } from "~shared/utils/wgAppStore";
+
+
+
+
 
 // RAM-only store
 // const sessionSecureStorage = new SecureStorage({area: 'session'}) //sess.Storage({ area: "session" }) // survives SW restarts
@@ -23,13 +27,22 @@ const sessionStorage = new Storage({ area: "session" })
 
 let sessionWallet: Keypair | null = null
 
-initBackgroundListeners();
+initBackgroundConfirmationListeners();
+let popupPort: chrome.runtime.Port | null = null;
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === 'popup') {
+    popupPort = port;
+
+    // Listen for popup disconnection
+    port.onDisconnect.addListener(() => {
+      popupPort = null;
+    });
+  }
+});
+
 
 function isPopupOpen(): boolean {
-  if (!chrome.extension.getViews) return false;
-
-  const popupViews = chrome.extension.getViews({ type: 'popup' });
-  return popupViews.length > 0;
+  return popupPort !== null;
 }
 
 async function restoreSession() {
@@ -56,9 +69,9 @@ restoreSession().catch(console.error)
 
 // Helper: open extension popup when user initiates connect from web‑app
 async function openExtensionPopup() {
+  if (isPopupOpen()) return
 
-
-  if (chrome.action?.openPopup && !isPopupOpen()) {
+  if (chrome.action?.openPopup) {
     // Since Chrome 108 – opens the action popup programmatically
     await chrome.action.openPopup()
   } else {
@@ -69,6 +82,8 @@ async function openExtensionPopup() {
     })
   }
 }
+
+
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   ;(async () => {
@@ -155,20 +170,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           ) {
             return sendResponse({ error: "Account mismatch" })
           }
-
-
-          const requestId = await createConfirmationRequest(
-            "signMessage",
-            { message: msg.message, account: msg.account },
-            {
-              origin: sender.origin ?? "Unknown",
-              tabId: sender.tab?.id,
-              favicon: sender.tab?.favIconUrl
-            }
-          )
-
-          await openExtensionPopup()
-          await waitForRequestResolution(requestId)
+          await userConfirmation(msg, sender)
 
           // Extract only the private key portion (first 32 bytes)
           const privateKey = sessionWallet.secretKey.slice(0, 32)
@@ -202,6 +204,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           if (!tx.feePayer?.equals(sessionWallet.publicKey)) {
             return sendResponse({ error: "Fee payer mismatch" })
           }
+
+          await userConfirmation(msg, sender)
 
           // Partially sign the transaction
           tx.partialSign(sessionWallet)
@@ -238,6 +242,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           // Partially sign the transaction
           tx.partialSign(sessionWallet)
           await waitForClusterInitialization;
+
+          await userConfirmation(msg, sender)
 
           const connection = new Connection(get(rpcUrl), "confirmed")
           const serializedTx = tx.serialize()
@@ -284,6 +290,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return true
 })
 
+async function userConfirmation(msg, sender) {
+  const requestId = await createConfirmationRequest(
+    "signMessage",
+    { message: msg.message, account: msg.account },
+    {
+      origin: sender.origin ?? "Unknown",
+      tabId: sender.tab?.id,
+      favicon: sender.tab?.favIconUrl
+    }
+  )
 
+  await openExtensionPopup()
+  await waitForRequestResolution(requestId)
+}
 
 restoreSession().catch(console.error)

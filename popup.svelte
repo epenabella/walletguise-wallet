@@ -64,6 +64,7 @@
       if (req) rejectRequest(req.id)
   }
 
+  const port = chrome.runtime.connect({name: 'popup'});
 
   onMount(() => {
       document.documentElement.classList.toggle("dark", true)
@@ -80,6 +81,7 @@
           return;
       })
       initPopupListeners()
+
   })
 </script>
 
