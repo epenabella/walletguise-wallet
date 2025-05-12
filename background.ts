@@ -227,7 +227,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       case "walletguise#signAndSend": {
         if (!sessionWallet) return sendResponse({ error: "locked" })
         try {
-          const tx = Transaction.from(Buffer.from(msg.tx))
+          const tx = Transaction.from(new Buffer(msg.tx))
 
           // Validate fee payer
           if (!tx.feePayer?.equals(sessionWallet.publicKey)) {
@@ -284,6 +284,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
         sendResponse({ lamports })
         break
+      }
+      case "walletguise#deleteKeys": {
+        try {
+          await wgLocalSecureStore.clear();                           // ENC_WALLET / HASH
+          await chrome.storage.local.remove([STORAGE_KEYS.HASH, STORAGE_KEYS.ENC_WALLET]);
+          sessionWallet = null;
+          chrome.runtime.sendMessage({ type: "walletguise#disconnect" }).catch(() => {});
+
+          sendResponse({ ok: true });
+        } catch (err) {
+          console.error("deleteKeys failed", err);
+          sendResponse({ error: String(err) });
+        }
+        break;
       }
     }
   })()

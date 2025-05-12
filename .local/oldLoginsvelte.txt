@@ -16,3 +16,12 @@
     //         }
     //     })
     // })
+
+                // unlockWallet(password).then(r => {
+                //     if (tempKp) {
+                //         kpStore.set(tempKp);
+                //     }
+                //     dispatch("success");
+                // }).catch(e => {
+                //     console.error('login unlock error: ' + JSON.stringify(e))
+                // });

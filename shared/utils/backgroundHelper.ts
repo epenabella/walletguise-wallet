@@ -7,6 +7,7 @@ import { ERROR_LOCKED } from '~shared/types/WalletGuiseConnect.types';
 import { kpStore } from "~shared/utils/kpStore";
 import { rpcUrl } from "~shared/utils/networkStore";
 import bs58 from "bs58"
+import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
 
 
 
@@ -101,7 +102,17 @@ export async function signAndSendTransaction(
   return signature;
 }
 
-// UI functions
-export async function openPopup(): Promise<void> {
-  await send('walletguise#openPopup');
+export async function deleteKeys(): Promise<void> {
+  // Disconnect first so adapters can tidy up
+  // await disconnectWallet().catch(() => {/* already disconnected */})
+  await send({ type: "walletguise#deleteKeys" })
+  // Local writable store that mirrors the background keypair
+  await wgLocalSecureStore.clear();
+  kpStore.set(null);
+
 }
+
+// UI functions
+// export async function openPopup(): Promise<void> {
+//   await send('walletguise#openPopup');
+// }

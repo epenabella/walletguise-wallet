@@ -35,7 +35,6 @@ import {
   type WalletGuiseWallet
 } from "~shared/types/WalletGuiseConnect.types"
 import { createSignInMessage, parseSignInMessage } from "~shared/utils/crypto"
-import { openPopup } from "~shared/utils/backgroundHelper"
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],

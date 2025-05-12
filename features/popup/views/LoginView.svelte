@@ -42,8 +42,6 @@
             //import or createNew()?  input seedphrase or grindClue to create
 
             // if createNew(), then grind clue, then special transcaction
-
-
             tempKp = input ? importFromMnemonic(input).keypair : Keypair.generate();
 
             await wgLocalSecureStore.setPassword(password)
@@ -80,17 +78,7 @@
             }).catch(e => {
                 console.error('login unlock error: ' + JSON.stringify(e))
             });
-            // unlockWallet(password).then(r => {
-            //     if (tempKp) {
-            //         kpStore.set(tempKp);
-            //     }
-            //     dispatch("success");
-            // }).catch(e => {
-            //     console.error('login unlock error: ' + JSON.stringify(e))
-            // });
         })
-
-
     };
 
 </script>

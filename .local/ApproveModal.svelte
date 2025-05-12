@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Modal, Button } from "flowbite-svelte";
     import type { Transaction } from "@solana/web3.js";
-    import { walletStore } from "~shared/utils/kpStore";
+    import { kpStore } from "";
     // import {sendSignedTx} from "~shared/utils/solana";
 
     export let open = false;
@@ -9,7 +9,7 @@
 
     const approve = async () => {
         if (!tx) return;
-        const kp = $walletStore;
+        const kp = $kpStore;
         if (!kp) return;
         tx.feePayer = kp.publicKey;
         tx.partialSign(kp);

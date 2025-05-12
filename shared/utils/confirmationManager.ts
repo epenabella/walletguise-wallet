@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Storage } from "@plasmohq/storage"
 import { writable } from "svelte/store"
-import { Transaction } from "@solana/web3.js"
+import { Transaction, TransactionInstruction } from "@solana/web3.js"
 
 // ------------------------------------------------------------------
 // types
@@ -239,7 +239,7 @@ export function initBackgroundConfirmationListeners(): void {
   })
 }
 
-export function initPopupListeners(): void {
+export function initPopupRequestConfirmationListeners(): void {
   // initial
   getRequestMap().then((map) => currentRequestStore.set(extractNextPending(map)))
 
@@ -291,6 +291,8 @@ export async function rejectRequest(id: string) {
 
 function extractProgramIds(payload: any): string[] | undefined {
   try {
+    let something: TransactionInstruction
+
     if (payload && "transaction" in payload) {
       const tx = (payload.transaction as Transaction) ?? Transaction.from(payload.tx)
       return [...new Set(tx.instructions.map((ix) => ix.programId.toBase58()))]

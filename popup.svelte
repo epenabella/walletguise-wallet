@@ -13,7 +13,7 @@
   import { restoreWallet } from "~shared/utils/backgroundHelper"
   import { STORAGE_KEYS } from "~shared/utils/constants"
   import {
-      initPopupListeners,
+      initPopupRequestConfirmationListeners,
       currentRequestStore,
       approveRequest,
       rejectRequest
@@ -80,8 +80,8 @@
           mounted = true;
           return;
       })
-      initPopupListeners()
 
+      initPopupRequestConfirmationListeners()
   })
 </script>
 

@@ -1,7 +1,7 @@
 {
   "name": "wallet-guise-plasmo-ext",
   "displayName": "Wallet guise plasmo ext",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Wallet Guise - preloaded wallets",
   "author": "WalletGuise",
   "scripts": {
