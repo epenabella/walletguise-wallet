@@ -288,8 +288,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       case "walletguise#deleteKeys": {
         try {
           await wgLocalSecureStore.clear();                           // ENC_WALLET / HASH
+          await sessionStorage.clear();
           await chrome.storage.local.remove([STORAGE_KEYS.HASH, STORAGE_KEYS.ENC_WALLET]);
           sessionWallet = null;
+
           chrome.runtime.sendMessage({ type: "walletguise#disconnect" }).catch(() => {});
 
           sendResponse({ ok: true });
