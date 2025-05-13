@@ -130,13 +130,13 @@
             <div class="flex gap-3 mt-2">
                 <button
                   type="submit"
-                  class="flex-1 py-2.5 text-lg font-medium text-white rounded-lg bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 focus:ring-4 focus:ring-green-200 dark:from-green-400 dark:to-blue-500"
+                  class="flex-1 py-2 font-medium text-white rounded-lg bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 focus:ring-4 focus:ring-green-200 dark:from-green-400 dark:to-blue-500"
                 >
                     Import Wallet
                 </button>
                 <button
                   type="button"
-                  class="flex-1 py-2.5 text-sm font-medium text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600"
+                  class="flex-1 py-2 font-medium text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600"
                   on:click={() => (action = null)}
                 >
                     Back

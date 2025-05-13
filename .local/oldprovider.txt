@@ -1,5 +1,0 @@
-    // const isValid = nacl.sign.detached.verify(
-    //   output.signedMessage,
-    //   output.signature,
-    //   output.account.publicKey as Uint8Array // Ensure publicKey is Uint8Array
-    // );
