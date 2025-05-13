@@ -5,6 +5,7 @@
   "description": "Wallet Guise - preloaded wallets",
   "author": "WalletGuise",
   "scripts": {
+    "push-all": "git push origin && git push github.com",
     "tailwind": "npx @tailwindcss/cli -i ./input.css -o ./assets/style.css --watch\n",
     "dev": "plasmo dev",
     "build": "plasmo build",
