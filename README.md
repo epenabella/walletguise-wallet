@@ -1,42 +1,70 @@
+# Solana Wallet Extension with WalletGuise Integration
 
+A secure browser extension wallet for Solana that creates pre-funded wallets through proof-of-work clue solving.
 
-TEST WALLET HERE:
+## 🎯 Unique Value Proposition
 
-https://anza-xyz.github.io/wallet-adapter/example/
+**First-of-its-kind Solana wallet that converts puzzle-solving into funded wallets**
 
+### Why This Matters
+- **Zero barrier to entry**: Users get SOL without buying or faucets
+- **Proof-of-work validation**: Prevents bot farming through auto PoW challenges
+- **Educational onboarding**: Learn Solana & crypto without spending time & money to start
 
-------------------
+## 🚀 Key Features
 
-This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
+### Core Wallet Functions
+- **Secure key management**: Encrypted private key storage
+- **Network flexibility**: Mainnet, Devnet, and Testnet support
+- **Transaction handling**: Send/receive SOL with confirmation modals
+- **Settings & security**: Private key deletion with multi-step confirmation
 
-## Getting Started
+### Unique Features
+- **WalletGuise Integration**: Connect to clue-solving dApp
+- **Proof-of-Work Rewards**: Earn SOL with quick background PoW
+- **Pre-funded Wallets**: Created wallets start with SOL balance good enough for 10-100 transactions?
 
-First, run the development server:
+## 🏁 Hackathon Development Strategy
+
+### Features We Prioritized
+1. **Security-first approach**: Multi-step wallet deletion prevents accidental loss
+2. **Seamless WalletGuise connection**: One-click integration with clue-solving platform
+3. **Intuitive UX**: Familiar wallet interface with unique proof-of-work twist
+
+### Why These Decisions
+- **Market gap**: No existing Solana wallet offers proof-of-work funded creation
+- **User acquisition**: KYC free onboarding enables & attracts non-crypto users
+- **Technical feasibility**: It already works on dev & mainnet
+
+## 🔍 Competitive Landscape
+
+### Current Market
+- **Traditional wallets**: Phantom, Solflare, Backpack - require SOL purchase
+- **Faucets**: Limited, unreliable, often empty
+- **Bitcoin faucets**: Solve CAPTCHAs for tiny rewards
+
+### Our Advantage
+- **Meaningful rewards**: Real usable SOL amounts
+- **Skill-based distribution**: Clues prevent bot farming
+- **Educational value**: Learn while earning
+
+## ⚡ Quick Start
 
 ```bash
-pnpm dev
-# or
-npm run dev
+pnpm dev  # Development
+pnpm build  # Production build
 ```
 
-Open your browser and load the appropriate development build. For example, if you are developing for the chrome browser, using manifest v3, use: `build/chrome-mv3-dev`.
+Load `build/chrome-mv3-dev` in Chrome for testing.
 
-You can start editing the popup by modifying `popup.tsx`. It should auto-update as you make changes. To add an options page, simply add a `options.tsx` file to the root of the project, with a react component default exported. Likewise to add a content page, add a `content.ts` file to the root of the project, importing some module and do some logic, then reload the extension on your browser.
+## 🔧 Technical Stack
 
-For further guidance, [visit our Documentation](https://docs.plasmo.com/)
+- **Framework**: Plasmo (TypeScript)
+- **Frontend**: Svelte + TailwindCSS
+- **Blockchain**: Solana Web3.js
+- **Storage**: Encrypted local storage
+- **Integration**: WalletGuise dApp connector
 
-## Making production build
+---
 
-Run the following:
-
-```bash
-pnpm build
-# or
-npm run build
-```
-
-This should create a production bundle for your extension, ready to be zipped and published to the stores.
-
-## Submit to the webstores
-
-The easiest way to deploy your Plasmo extension is to use the built-in [bpp](https://bpp.browser.market) GitHub action. Prior to using this action however, make sure to build your extension and upload the first version to the store to establish the basic credentials. Then, simply follow [this setup instruction](https://docs.plasmo.com/framework/workflows/submit) and you should be on your way for automated submission!
+**Built with ❤️ for the Solana ecosystem**
