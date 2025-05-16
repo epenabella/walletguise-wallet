@@ -9,6 +9,11 @@
   import ErrorMessageModal from "~shared/components/sub-views/send/ErrorMessageModal.svelte"
   import { get } from "svelte/store"
   import { connectionStore } from "~shared/utils/networkStore"
+  import { toasts } from "~shared/utils/toasts"
+  import { getTotalSolAmount, getTransactionAmounts, parseTransactionForDisplay } from "~shared/utils/transaction"
+  import { formatPublicKey } from "~shared/utils/crypto"
+  import { maybeCreateRefillIx } from "@wallet-guise/core"
+  import { CLIENT_PUBLIC_KEY } from "~shared/utils/constants"
 
   let confirmModalComponent;
   let errorModalComponent;
@@ -24,10 +29,10 @@
     errorModalComponent.open();
   }
 
-  function handleOpenConfirmModal() {
-    // Call the exported method from the child component
-    confirmModalComponent.open();
-  }
+  // function handleOpenConfirmModal() {
+  //   // Call the exported method from the child component
+  //   confirmModalComponent.open();
+  // }
 
   function handleCloseConfirmModal() {
     confirmModalComponent.close();
@@ -86,7 +91,8 @@
     }
 
     // All validations passed, show confirmation modal
-    handleOpenConfirmModal();
+    // handleOpenConfirmModal();
+    await handleSendTransaction();
   }
 
   async function handleSendTransaction() {
@@ -116,8 +122,9 @@
       console.log("Sending transaction via WalletGuise provider:", transaction);
 
       const signature = await signAndSendTransaction(transaction, options);
-
+      const total = getTotalSolAmount(transaction);
       successMessage = `Transaction sent successfully! Signature: ${signature.substring(0, 10)}...`; // Show partial signature
+      toasts.add(`Sent ${total ?? ""} to ${formatPublicKey(recipient)}`, 'success', 100000)
       recipient = ''; // Clear form
       amount = '';
 
@@ -132,8 +139,7 @@
 
     } finally {
       isLoading = false;
-      handleCloseConfirmModal(); // Close modal after transaction completes (success or error)
-
+      //handleCloseConfirmModal(); // Close modal after transaction completes (success or error)
     }
   }
 </script>

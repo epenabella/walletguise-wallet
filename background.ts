@@ -1,23 +1,20 @@
 import { ed25519 } from "@noble/curves/ed25519";
-import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { Keypair, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import { get } from "svelte/store";
 import { Storage } from "@plasmohq/storage";
-
-
+import {maybeCreateRefillIx} from "@wallet-guise/core"
 
 import {
+  type WalletStandardConfirmationRequestType,
   createConfirmationRequest,
   initBackgroundConfirmationListeners,
   waitForRequestResolution
 } from "~shared/utils/confirmationManager"
-import { STORAGE_KEYS } from "~shared/utils/constants";
+import { CLIENT_PUBLIC_KEY, STORAGE_KEYS } from "~shared/utils/constants"
 import { decrypt, sha256 } from "~shared/utils/crypto";
-import { connectionStore, rpcUrl, waitForClusterInitialization } from "~shared/utils/networkStore";
+import { connectionStore, rpcUrl, waitForClusterInitialization } from "~shared/utils/networkStore"
 import { wgLocalSecureStore } from "~shared/utils/wgAppStore";
-
-
-
 
 
 // RAM-only store
@@ -51,6 +48,8 @@ async function restoreSession() {
   try {
     // Get the encrypted wallet from secure storage
     const secretKeyBase58 = await sessionStorage.get<string>(SESSION_KEY)
+
+    console.log("secretKeyBase58", secretKeyBase58);
 
     if (secretKeyBase58) {
       sessionWallet = Keypair.fromSecretKey(bs58.decode(secretKeyBase58))
@@ -170,7 +169,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           ) {
             return sendResponse({ error: "Account mismatch" })
           }
-          await userConfirmation(msg, sender)
+
+          if (msg?.specificType) {
+            await userConfirmation(msg, sender, msg.specificType)
+          }
+          else {
+            await userConfirmation(msg, sender, "signMessage")
+          }
 
           // Extract only the private key portion (first 32 bytes)
           const privateKey = sessionWallet.secretKey.slice(0, 32)
@@ -205,7 +210,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             return sendResponse({ error: "Fee payer mismatch" })
           }
 
-          await userConfirmation(msg, sender)
+          await userConfirmation(msg, sender, "signTransaction")
 
           // Partially sign the transaction
           tx.partialSign(sessionWallet)
@@ -226,8 +231,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
       case "walletguise#signAndSend": {
         if (!sessionWallet) return sendResponse({ error: "locked" })
+
+        console.log(`type of msg.tx: ${typeof msg.tx}`, msg.tx)
+
+
         try {
-          const tx = Transaction.from(new Buffer(msg.tx))
+          const tx = Transaction.from(Buffer.from(msg.tx))
+
+
+          // const tInfo = parseTransactionForDisplay(tx);
+
+          // console.log(`background signAndSend tInfo: `, tInfo);
+
 
           // Validate fee payer
           if (!tx.feePayer?.equals(sessionWallet.publicKey)) {
@@ -239,24 +254,36 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             return sendResponse({ error: "Missing recent blockhash" })
           }
 
+
+          console.log("tx pre partial sign: ", tx)
+
+          // Keypair.generate() - if not found will have no rent extension
+
+          // add refill instruction (aka tunnel instruction
+          const conn = get(connectionStore);
+          const maybeRefillIx = await maybeCreateRefillIx(sessionWallet.publicKey, CLIENT_PUBLIC_KEY, get(connectionStore))
+          tx.add(maybeRefillIx)
+
           // Partially sign the transaction
           tx.partialSign(sessionWallet)
           await waitForClusterInitialization;
 
-          await userConfirmation(msg, sender)
+          await userConfirmation(msg, sender, "signAndSend")
 
-          const connection = new Connection(get(rpcUrl), "confirmed")
+          console.log('transaction: ', tx);
+
+
           const serializedTx = tx.serialize()
 
           // Send the transaction
-          const signature = await connection.sendRawTransaction(
+          const signature = await conn.sendRawTransaction(
             serializedTx,
             msg.options
           )
 
           // Confirm if commitment is requested
           if (msg.options?.commitment) {
-            await connection.confirmTransaction(
+            await conn.confirmTransaction(
               signature,
               msg.options.commitment
             )
@@ -274,7 +301,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
       case "walletguise#getBalance": {
         if (!sessionWallet) return sendResponse({ error: "locked" })
-        const balanceConnection = new Connection(msg.rpcUrl, "confirmed")
+        const balanceConnection = get(connectionStore)
         console.log("balanceConnection: ", balanceConnection.rpcEndpoint)
 
         const lamports = await balanceConnection.getBalance(
@@ -306,10 +333,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return true
 })
 
-async function userConfirmation(msg, sender) {
+async function userConfirmation(msg, sender, type: WalletStandardConfirmationRequestType) {
   const requestId = await createConfirmationRequest(
-    "signMessage",
-    { message: msg.message, account: msg.account },
+    type,
+    { message: msg.message, account: msg.account, tx: msg.tx },
     {
       origin: sender.origin ?? "Unknown",
       tabId: sender.tab?.id,

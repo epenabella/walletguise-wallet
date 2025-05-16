@@ -25,12 +25,16 @@ clusterStore.subscribe(async (c) => {
 export const rpcUrl: Readable<string | null> = derived(
   clusterStore,
   (cluster) => {
-    if (cluster) {
-      return cluster === "mainnet-beta"
-        ? `https://mainnet.helius-rpc.com/?api-key=7172e6d9-44f0-4473-b866-cc83b9cffdbc`
-        : clusterApiUrl(cluster)
-    } else {
-      return null
+
+    switch (cluster) {
+      case "mainnet-beta":
+        return `https://mainnet.helius-rpc.com/?api-key=7172e6d9-44f0-4473-b866-cc83b9cffdbc`;
+        case "devnet":
+          return "https://docs-demo.solana-devnet.quiknode.pro"//"https://devnet.helius-rpc.com/?api-key=7172e6d9-44f0-4473-b866-cc83b9cffdbc";
+          case "testnet":
+            return clusterApiUrl(cluster)
+      default:
+        return null
     }
   }
 )

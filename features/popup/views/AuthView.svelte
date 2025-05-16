@@ -1,21 +1,18 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { writable } from "svelte/store"
   import { selectedAuthTab } from "~shared/utils/navStore"
-  import { fetchBalance, sol } from "~shared/utils/balanceStore"
+  import { fetchBalance, loadingBalance, sol } from "~shared/utils/balanceStore"
   import QrCode from "~shared/components/sub-views/QrCode.svelte"
   import Settings from "~shared/components/sub-views/Settings.svelte"
   import NFTGallery from "~shared/components/sub-views/NFTGallery.svelte"
   import Send from "~shared/components/sub-views/send/Send.svelte"
+  import { balanceTimer } from "~shared/utils/balanceTimer"
 
-  const loading = writable(true)
   // --- Lifecycle ---
   onMount(() => {
-    fetchBalance(loading)
-    const fetchBalanceId = setInterval(() => fetchBalance(loading), 30_000)
-
+    balanceTimer.start(fetchBalance, 30_000);
     return () => {
-      clearInterval(fetchBalanceId)
+      balanceTimer.stop();
     }
   });
 </script>
@@ -27,12 +24,12 @@
     {#if $selectedAuthTab === 'balance'}
       <div class="p-2">
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white">WalletGuise Balance</h1>
-        {#if $loading}
+        {#if $loadingBalance}
           <p class="text-center text-sm text-gray-900 dark:text-white">Loading …</p>
         {:else}
           <div class="flex flex-col items-center gap-4">
-            {#if sol !== null}
-              <p class="text-3xl font-mono text-gray-900 dark:text-white">{$sol.toFixed(4)} <span class="text-purple-500">◎</span></p>
+            {#if sol !== null && !$loadingBalance}
+              <p class="text-3xl font-mono text-gray-900 dark:text-white">{$sol?.toFixed(4)} <span class="text-purple-500">◎</span></p>
             {:else}
               <p class="text-red-500 text-sm">Unable to load balance</p>
             {/if}

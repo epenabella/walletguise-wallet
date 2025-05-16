@@ -7,7 +7,7 @@
   import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
   import { onMount } from "svelte"
   import NavMenu from "~shared/components/NavMenu.svelte"
-  import {kpStore} from '~shared/utils/kpStore'
+  import { isClueGrinding, kpStore, showMnemonicModal, showMoneyGif } from "~shared/utils/kpStore"
   import Balance from "~shared/components/sub-views/Balance.svelte"
   import { clusterStore } from "~shared/utils/networkStore"
   import { restoreWallet } from "~shared/utils/backgroundHelper"
@@ -20,6 +20,7 @@
   } from "~shared/utils/confirmationManager"
   import { get } from "svelte/store"
   import BackgroundConfirmationModal from "~shared/components/sub-views/BackgroundConfirmationModal.svelte"
+  import ToastContainer from "~shared/components/toast/ToastContainer.svelte"
 
 
   let mounted = false;
@@ -85,6 +86,7 @@
   })
 </script>
 
+<ToastContainer />
 <div
   class="flex w-full bg-white  dark:bg-gray-700 min-w-[350px] max-w-[350px] min-h-[380px] max-h-[380px]">
     {#if !$clusterStore || !mounted}
@@ -92,9 +94,9 @@
 
         </div>
 
-    {:else if !$kpStore}
+    {:else if !$kpStore || $isClueGrinding || $showMoneyGif || $showMnemonicModal}
         <!-- This branch will only execute if $kpStore is truthy AND someOtherCondition is truthy -->
-        <div
+        <div id="login"
           class="flex flex-col justify-center min-h-[380px] max-h-[380px] min-w-[350px] max-w-[350px] z-50 gap-2 py-2  bg-white border-r border-gray-200 dark:bg-gray-700 dark:border-gray-600">
             <Login />
         </div>

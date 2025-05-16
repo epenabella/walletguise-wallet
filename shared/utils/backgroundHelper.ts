@@ -8,13 +8,13 @@ import { kpStore } from "~shared/utils/kpStore";
 import { rpcUrl } from "~shared/utils/networkStore";
 import bs58 from "bs58"
 import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
+import type { WalletStandardConfirmationRequestType } from "~shared/utils/confirmationManager"
 
 
-
-type message = { type: string } & any;
+export type BackgroundMessage = { type: string, specificType?: WalletStandardConfirmationRequestType } & any;
 
 // Core messaging function
-async function send<T>(message: message): Promise<T> {
+async function send<T>(message: BackgroundMessage): Promise<T> {
 
   // debugger;
 
@@ -74,7 +74,7 @@ export async function connectWallet(): Promise<string> {
   return publicKey
 }
 
-export async function getBalance(): Promise<number> {
+export async function getBalanceBackground(): Promise<number> {
   const { lamports } = await send<{ lamports: number }>({
     type: "walletguise#getBalance",
     rpcUrl: get(rpcUrl)
@@ -90,12 +90,18 @@ export async function signAndSendTransaction(
   transaction: Transaction,
   options?: SendTransactionOptions
 ): Promise<string> {
-  const serializedTx = transaction.serialize();
+  const serializedTx = transaction.serialize({
+    requireAllSignatures: false,
+    verifySignatures: false
+  });
+
+  console.log(`backgroundHelper serializedTx`, serializedTx);
+
   const { signature } = await send<{ signature: string }>(
     {
       type: 'walletguise#signAndSend',
       rpcUrl: get(rpcUrl),
-      tx: Array.from(serializedTx),
+      tx: serializedTx,
       options
     }
   );

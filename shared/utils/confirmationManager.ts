@@ -2,12 +2,12 @@
 import { Storage } from "@plasmohq/storage"
 import { writable } from "svelte/store"
 import { Transaction, TransactionInstruction } from "@solana/web3.js"
+import { sleep } from "~shared/utils/misc"
 
 // ------------------------------------------------------------------
 // types
 // ------------------------------------------------------------------
-
-export type RequestType =
+export type WalletStandardConfirmationRequestType =
   | "signMessage"
   | "signTransaction"
   | "signAndSend"
@@ -18,7 +18,7 @@ export type RequestStatus = "pending" | "approved" | "rejected" | "expired"
 
 export interface ConfirmationRequest {
   id: string
-  type: RequestType
+  type: WalletStandardConfirmationRequestType
   payload: any
   origin: string
   favicon?: string
@@ -79,7 +79,7 @@ function refreshKeepAlive(hasPending: boolean) {
 // ------------------------------------------------------------------
 
 export async function createConfirmationRequest(
-  type: RequestType,
+  type: WalletStandardConfirmationRequestType,
   payload: any,
   context: { origin: string; tabId?: number; favicon?: string }
 ): Promise<string> {
@@ -266,7 +266,14 @@ export function initPopupRequestConfirmationListeners(): void {
       }
 
       const map = newValue as RequestMap
-      currentRequestStore.set(extractNextPending(map))
+
+      const next = extractNextPending(map);
+      currentRequestStore.set(null);
+
+      if (next) {
+        sleep(100).then(() => currentRequestStore.set(next));
+      }
+
     } catch (error) {
       console.error("Error updating current request store:", error)
     }
@@ -291,8 +298,6 @@ export async function rejectRequest(id: string) {
 
 function extractProgramIds(payload: any): string[] | undefined {
   try {
-    let something: TransactionInstruction
-
     if (payload && "transaction" in payload) {
       const tx = (payload.transaction as Transaction) ?? Transaction.from(payload.tx)
       return [...new Set(tx.instructions.map((ix) => ix.programId.toBase58()))]

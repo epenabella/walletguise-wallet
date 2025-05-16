@@ -35,6 +35,7 @@ import {
   type WalletGuiseWallet
 } from "~shared/types/WalletGuiseConnect.types"
 import { createSignInMessage, parseSignInMessage } from "~shared/utils/crypto"
+import {type WalletStandardConfirmationRequestType} from '~shared/utils/confirmationManager';
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -217,11 +218,14 @@ class WalletGuiseImpl implements WalletGuiseWallet {
 
     await this.connect();
 
+    const specificType: WalletStandardConfirmationRequestType = 'signIn';
+
     const { signature, error } = await this.bridgeCall(
       "walletguise#signMessage",
       {
         message: Array.from(messageBytes),
-        account: account.address
+        account: account.address,
+        specificType
       }
     )
 

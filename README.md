@@ -68,3 +68,8 @@ Load `build/chrome-mv3-dev` in Chrome for testing.
 ---
 
 **Built with ❤️ for the Solana ecosystem**
+
+
+pnpm config set @wallet-guise:registry https://gitea.epenabella.com/api/packages/ricalski/npm/
+pnpm config set //gitea.epenabella.com/api/packages/ricalski/npm/:_authToken "gitea auth token"
+pnpm add @wallet-guise/shared

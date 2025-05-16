@@ -1,7 +1,7 @@
 {
   "name": "wallet-guise-plasmo-ext",
   "displayName": "Wallet guise plasmo ext",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Wallet Guise - preloaded wallets",
   "author": "WalletGuise",
   "scripts": {
@@ -25,6 +25,7 @@
     "@tailwindcss/cli": "^4.1.4",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/qrcode": "^1.5.5",
+    "@wallet-guise/core": "^0.0.1",
     "axios": "^1.9.0",
     "bs58": "^6.0.0",
     "ed25519": "link:@noble/curves/ed25519",

@@ -47,6 +47,9 @@ importers:
       '@types/qrcode':
         specifier: ^1.5.5
         version: 1.5.5
+      '@wallet-guise/core':
+        specifier: ^0.0.1
+        version: 0.0.1
       axios:
         specifier: ^1.9.0
         version: 1.9.0(debug@4.4.0)
@@ -2274,6 +2277,9 @@ packages:
 
   '@vue/shared@3.3.4':
     resolution: {integrity: sha512-7OjdcV8vQ74eiz1TZLzZP4JwqM5fA94K6yntPS5Z25r9HDuGNzaGdgvwKYq6S+MxwF0TFRwe50fIR/MYnakdkQ==}
+
+  '@wallet-guise/core@0.0.1':
+    resolution: {integrity: sha512-9Wo1ACO6LXesbs6fsHQ0/jTJFQfAhLrPbuwbFS2vSCYvLttUJRAnnn5Ph1RHYV/hldKpqCZbh6OD1dDrnqFiNA==, tarball: https://gitea.epenabella.com/api/packages/ricalski/npm/%40wallet-guise%2Fcore/-/0.0.1/core-0.0.1.tgz}
 
   '@wallet-standard/app@1.1.0':
     resolution: {integrity: sha512-3CijvrO9utx598kjr45hTbbeeykQrQfKmSnxeWOgU25TOEpvcipD/bYDQWIqUv1Oc6KK4YStokSMu/FBNecGUQ==}
@@ -7670,6 +7676,12 @@ snapshots:
       vue: 3.3.4
 
   '@vue/shared@3.3.4': {}
+
+  '@wallet-guise/core@0.0.1':
+    dependencies:
+      '@scure/bip39': 1.6.0
+      '@swc/helpers': 0.5.17
+      buffer: 5.7.1
 
   '@wallet-standard/app@1.1.0':
     dependencies:

@@ -203,5 +203,27 @@ export function parseSignInMessageText(text: string): SolanaSignInInputWithRequi
   };
 }
 
+export function formatPublicKey(
+  publicKey: string | null | undefined,
+  startChars: number = 4,
+  endChars: number = 4
+): string {
+  // Handle null, undefined, or empty string
+  if (!publicKey || typeof publicKey !== 'string') {
+    return '';
+  }
+
+  // If the string is short enough, return as-is
+  if (publicKey.length <= startChars + endChars + 3) {
+    return publicKey;
+  }
+
+  // Create the shortened format with dots
+  const start = publicKey.substring(0, startChars);
+  const end = publicKey.substring(publicKey.length - endChars);
+
+  return `${start}.....${end}`;
+}
+
 // no pass-phrase
 //const keypair = Keypair.fromSeed(seed.slice(0, 32));
