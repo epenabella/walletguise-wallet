@@ -115,6 +115,7 @@ export async function deleteKeys(): Promise<void> {
   // Local writable store that mirrors the background keypair
   await wgLocalSecureStore.clear();
   kpStore.set(null);
+  await disconnectWallet();
 
 }
 

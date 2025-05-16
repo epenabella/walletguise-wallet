@@ -15,6 +15,7 @@ import { CLIENT_PUBLIC_KEY, STORAGE_KEYS } from "~shared/utils/constants"
 import { decrypt, sha256 } from "~shared/utils/crypto";
 import { connectionStore, rpcUrl, waitForClusterInitialization } from "~shared/utils/networkStore"
 import { wgLocalSecureStore } from "~shared/utils/wgAppStore";
+import { parseTransactionForDisplay } from "~shared/utils/transaction"
 
 
 // RAM-only store
@@ -266,6 +267,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
           // Partially sign the transaction
           tx.partialSign(sessionWallet)
+
+          const details = parseTransactionForDisplay(tx);
+          console.log(`details: ${JSON.stringify(details)}`)
+
           await waitForClusterInitialization;
 
           await userConfirmation(msg, sender, "signAndSend")
