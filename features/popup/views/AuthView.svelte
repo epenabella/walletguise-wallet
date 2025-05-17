@@ -3,7 +3,7 @@
   import { selectedAuthTab } from "~shared/utils/navStore"
   import { fetchBalance, loadingBalance, sol } from "~shared/utils/balanceStore"
   import QrCode from "~shared/components/sub-views/QrCode.svelte"
-  import Settings from "~shared/components/sub-views/Settings.svelte"
+  import Settings from "~shared/components/sub-views/Settings/Settings.svelte"
   import NFTGallery from "~shared/components/sub-views/NFTGallery.svelte"
   import Send from "~shared/components/sub-views/send/Send.svelte"
   import { balanceTimer } from "~shared/utils/balanceTimer"

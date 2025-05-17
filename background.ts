@@ -1,5 +1,5 @@
 import { ed25519 } from "@noble/curves/ed25519";
-import { Keypair, Transaction } from "@solana/web3.js";
+import { type Cluster, Connection, Keypair, Transaction } from "@solana/web3.js"
 import bs58 from "bs58";
 import { get } from "svelte/store";
 import { Storage } from "@plasmohq/storage";
@@ -11,9 +11,15 @@ import {
   initBackgroundConfirmationListeners,
   waitForRequestResolution
 } from "~shared/utils/confirmationManager"
-import { CLIENT_PUBLIC_KEY, STORAGE_KEYS } from "~shared/utils/constants"
+import { getClientPublicKey, STORAGE_KEYS } from "~shared/utils/constants"
 import { decrypt, sha256 } from "~shared/utils/crypto";
-import { connectionStore, rpcUrl, waitForClusterInitialization } from "~shared/utils/networkStore"
+import {
+  clusterStore,
+  clusterUrlMapper,
+  connectionStore,
+  rpcUrl,
+  waitForClusterInitialization
+} from "~shared/utils/networkStore"
 import { wgLocalSecureStore } from "~shared/utils/wgAppStore";
 import { parseTransactionForDisplay } from "~shared/utils/transaction"
 
@@ -156,6 +162,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ ok: true })
         break
       }
+      case "walletguise#setNetworkFromWallet": {
+        try {
+          await chrome.storage.local.set({ [STORAGE_KEYS.CLUSTER]: msg.cluster });
+          sendResponse({ ok: true });
+        } catch (error) {
+          console.error("Message signing failed:", error)
+          sendResponse({ error: error.message })
+        }
+        break
+      }
       case "walletguise#signMessage": {
         if (!sessionWallet) return sendResponse({ error: "locked" })
 
@@ -261,8 +277,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           // Keypair.generate() - if not found will have no rent extension
 
           // add refill instruction (aka tunnel instruction
-          const conn = get(connectionStore);
-          const maybeRefillIx = await maybeCreateRefillIx(sessionWallet.publicKey, CLIENT_PUBLIC_KEY, get(connectionStore))
+
+          const res = await chrome.storage.local.get([STORAGE_KEYS.CLUSTER]);
+          const cluster:Cluster = res[STORAGE_KEYS.CLUSTER] ?? 'mainnet-beta';
+          const conn = new Connection(clusterUrlMapper(cluster));
+
+
+          console.log(`res: ${res}, clus: ${cluster}`);
+
+          const maybeRefillIx = await maybeCreateRefillIx(sessionWallet.publicKey, getClientPublicKey(cluster), conn)
           tx.add(maybeRefillIx)
 
           // Partially sign the transaction
@@ -306,7 +329,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
       case "walletguise#getBalance": {
         if (!sessionWallet) return sendResponse({ error: "locked" })
-        const balanceConnection = get(connectionStore)
+        const balanceConnection = new Connection(msg.rpcUrl, "confirmed")
         console.log("balanceConnection: ", balanceConnection.rpcEndpoint)
 
         const lamports = await balanceConnection.getBalance(

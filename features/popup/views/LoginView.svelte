@@ -7,7 +7,7 @@
   import WgLogo from "~shared/components/icons/WgLogo.svelte";
   import { isClueGrinding, showMoneyGif, kpStore, showMnemonicModal } from "~shared/utils/kpStore"
   import { getBalanceBackground, saveWallet } from "~shared/utils/backgroundHelper"
-  import { CLIENT_PUBLIC_KEY, STORAGE_KEYS } from "~shared/utils/constants"
+  import { getClientPublicKey, STORAGE_KEYS } from "~shared/utils/constants"
   import { createPreloadedWallet } from "@wallet-guise/core"
   import MnemonicModal from "~shared/components/sub-views/MnemonicModal.svelte"
   import {LOADING_MESSAGES} from "~shared/utils/constants";
@@ -28,6 +28,8 @@
   let loadingInterval: NodeJS.Timeout;
   let currentLoadingMessage = LOADING_MESSAGES[0];
   import oldMoneyGif from '~assets/oldmoney.gif'
+  import { clusterStore, rpcUrl } from "~shared/utils/networkStore"
+  import { get } from "svelte/store"
 
   // computed from hasWallet
   $: mode = hasWallet ? ("unlock" as const) : ("create" as const);
@@ -66,7 +68,11 @@
     }, 2000);
 
     try {
-      const { success, newWallet, confirmationResult  } = await createPreloadedWallet(CLIENT_PUBLIC_KEY);
+
+
+      const { success, newWallet, confirmationResult  } = await createPreloadedWallet(getClientPublicKey($clusterStore), get(rpcUrl));
+
+
       if (success && newWallet && newWallet?.keypair) {
         // Show money gif after successful wallet creation
         isClueGrinding.set(false);
@@ -98,7 +104,8 @@
       else {
         isClueGrinding.set(false);
         clearInterval(loadingInterval);
-        alert('something went wrong');
+        // confResult is err
+        alert('something went wrong '+ JSON.stringify(confirmationResult));
       }
     } catch (error) {
       isClueGrinding.set(false);

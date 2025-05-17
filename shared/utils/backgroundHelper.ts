@@ -1,5 +1,5 @@
 // backgroundHelper.ts
-import { type Keypair, type Transaction } from "@solana/web3.js"
+import { type Cluster, type Keypair, type Transaction } from "@solana/web3.js"
 import { get } from "svelte/store";
 
 import type { BackgroundResponse, SendTransactionOptions } from "~shared/types/WalletGuiseConnect.types";
@@ -64,6 +64,10 @@ export async function restoreWallet(secretKey: string): Promise<void> {
 
 export async function disconnectWallet(): Promise<void> {
   await send({type: 'walletguise#disconnect'});
+}
+
+export async function setBackgroundNetwork(cluster: Cluster): Promise<void> {
+  await send({type: 'walletguise#setNetworkFromWallet', cluster});
 }
 
 // Wallet operations

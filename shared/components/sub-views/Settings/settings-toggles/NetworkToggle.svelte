@@ -1,6 +1,7 @@
 <script lang="ts">
   import { clusterStore, type Cluster } from "~shared/utils/networkStore"
   import { rejectAllRequests } from "~shared/utils/confirmationManager"
+  import { setBackgroundNetwork } from "~shared/utils/backgroundHelper"
 
   export let dropdownOpen = false
 
@@ -10,7 +11,8 @@
   }
 
   function setCluster(newCluster: Cluster) {
-    rejectAllRequests().then(() => {
+    rejectAllRequests().then(async () => {
+      await setBackgroundNetwork(newCluster);
       clusterStore.set(newCluster)
       dropdownOpen = false
     })

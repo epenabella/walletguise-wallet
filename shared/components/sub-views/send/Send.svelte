@@ -13,7 +13,6 @@
   import { getTotalSolAmount, getTransactionAmounts, parseTransactionForDisplay } from "~shared/utils/transaction"
   import { formatPublicKey } from "~shared/utils/crypto"
   import { maybeCreateRefillIx } from "@wallet-guise/core"
-  import { CLIENT_PUBLIC_KEY } from "~shared/utils/constants"
 
   let confirmModalComponent;
   let errorModalComponent;

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import DarkModeToggle from "~shared/components/settings-toggles/DarkModeToggle.svelte"
-  import NetworkToggle from "~shared/components/settings-toggles/NetworkToggle.svelte"
-  import DeletePrivateKeysModal from "~shared/components/settings-toggles/DeleteWallet/DeletePrivateKeysModal.svelte"
+  import DarkModeToggle from "~shared/components/sub-views/Settings/settings-toggles/DarkModeToggle.svelte"
+  import NetworkToggle from "~shared/components/sub-views/Settings/settings-toggles/NetworkToggle.svelte"
+  import DeletePrivateKeysModal from "~shared/components/sub-views/Settings/settings-toggles/DeleteWallet/DeletePrivateKeysModal.svelte"
   import { deleteKeys } from "~shared/utils/backgroundHelper"
 
   let dropdownOpen = false
