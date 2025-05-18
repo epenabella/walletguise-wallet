@@ -1,6 +1,6 @@
 # Solana Wallet Extension with WalletGuise Integration
 
-A secure browser extension wallet for Solana that creates pre-funded wallets through proof-of-work clue solving.
+A Wallet Standard secure browser extension wallet for Solana that creates pre-funded wallets through proof-of-work clue solving.
 
 ## 🎯 Unique Value Proposition
 
@@ -33,20 +33,19 @@ A secure browser extension wallet for Solana that creates pre-funded wallets thr
 
 ### Why These Decisions
 - **Market gap**: No existing Solana wallet offers proof-of-work funded creation
-- **User acquisition**: KYC free onboarding enables & attracts non-crypto users
+- **User acquisition**: KYC free & preloaded onboarding enables & attracts non-crypto users
 - **Technical feasibility**: It already works on dev & mainnet
 
 ## 🔍 Competitive Landscape
 
 ### Current Market
 - **Traditional wallets**: Phantom, Solflare, Backpack - require SOL purchase
-- **Faucets**: Limited, unreliable, often empty
 - **Bitcoin faucets**: Solve CAPTCHAs for tiny rewards
 
 ### Our Advantage
 - **Meaningful rewards**: Real usable SOL amounts
 - **Skill-based distribution**: Clues prevent bot farming
-- **Educational value**: Learn while earning
+- **Educational value**: Learn while staying anonymous for free
 
 ## ⚡ Quick Start
 
