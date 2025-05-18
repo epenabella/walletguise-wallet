@@ -1,6 +1,6 @@
 # Solana Wallet Extension with WalletGuise Integration
 
-A Wallet Standard secure browser extension wallet for Solana that creates pre-funded wallets through proof-of-work clue solving.
+A Wallet Standard secure chrome browser extension wallet for Solana that creates pre-funded wallets through proof-of-work clue solving.
 
 ## 🎯 Unique Value Proposition
 
