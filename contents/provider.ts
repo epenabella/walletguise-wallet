@@ -34,8 +34,8 @@ import {
   type WalletGuiseFeatures,
   type WalletGuiseWallet
 } from "~shared/types/WalletGuiseConnect.types"
+import { type WalletStandardConfirmationRequestType } from "~shared/utils/confirmationManager"
 import { createSignInMessage, parseSignInMessage } from "~shared/utils/crypto"
-import {type WalletStandardConfirmationRequestType} from '~shared/utils/confirmationManager';
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -216,9 +216,9 @@ class WalletGuiseImpl implements WalletGuiseWallet {
     if (!parseSignInMessage(messageBytes))
       throw new Error("Malformed SIWS message")
 
-    await this.connect();
+    await this.connect()
 
-    const specificType: WalletStandardConfirmationRequestType = 'signIn';
+    const specificType: WalletStandardConfirmationRequestType = "signIn"
 
     const { signature, error } = await this.bridgeCall(
       "walletguise#signMessage",

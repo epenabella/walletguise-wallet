@@ -18,10 +18,10 @@ export async function refreshSolPrice() {
   }
 }
 
-export const solToLamports = (rawAmount:number | string) => {
-  const numericAmount = Number(rawAmount);
+export const solToLamports = (rawAmount: number | string) => {
+  const numericAmount = Number(rawAmount)
   if (isNaN(numericAmount) || numericAmount <= 0) {
-    throw Error ('Amount must be a positive number or string to number');
+    throw Error("Amount must be a positive number or string to number")
   }
 
   return numericAmount * 1_000_000_000

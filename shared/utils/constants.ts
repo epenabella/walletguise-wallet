@@ -1,10 +1,6 @@
 import type { Cluster } from "@solana/web3.js"
 import { PublicKey } from "@solana/web3.js"
 
-
-
-
-
 export const STORAGE_KEYS = {
   HASH: "walletguise_password_hash",
   ENC_WALLET: "walletguise_encrypted_wallet",
@@ -32,7 +28,4 @@ export function getClientPublicKey(cluster: Cluster): PublicKey {
   }
 }
 
-
-export const getClientKey = (cluster: Cluster) => {
-
-}
+export const getClientKey = (cluster: Cluster) => {}

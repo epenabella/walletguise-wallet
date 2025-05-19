@@ -1,17 +1,15 @@
 import { get } from "svelte/store"
 
-
-
 import {
-  type FloorInfo, type NFTAttribute,
+  SPAM_NFT_COLLECTIONS,
+  type FloorInfo,
+  type NFTAttribute,
   type NFTGroup,
   type NFTItem,
   type NFTResponse,
-  type PriceInfo,
-  SPAM_NFT_COLLECTIONS
+  type PriceInfo
 } from "~shared/types/NFT.types"
-import { solPrice } from "~shared/utils/solana";
-
+import { solPrice } from "~shared/utils/solana"
 
 /**
  * Create an NFT item from raw NFT data
@@ -54,14 +52,14 @@ export function createNFTItem(
     verified: nft.collection?.verified || false,
     spamScore: spamScore,
     rarity: { rank: null, percentage: null }
-  };
+  }
 }
 
 /**
  * Get image URL from NFT or metadata
  */
 export function getImageUrl(nft: any, metadata: any): string | null {
-  return metadata?.image || nft.json?.image || nft.image || null;
+  return metadata?.image || nft.json?.image || nft.image || null
 }
 
 /**
@@ -69,13 +67,13 @@ export function getImageUrl(nft: any, metadata: any): string | null {
  */
 export function extractAttributes(metadata: any): NFTAttribute[] {
   if (!metadata?.attributes || !Array.isArray(metadata.attributes)) {
-    return [];
+    return []
   }
 
-  return metadata.attributes.map(attr => ({
+  return metadata.attributes.map((attr) => ({
     traitType: attr.trait_type || attr.traitType || "unknown",
     value: attr.value
-  }));
+  }))
 }
 
 /**
@@ -85,12 +83,12 @@ export function extractAttributes(metadata: any): NFTAttribute[] {
 export function checkSpamStatus(nft: any, collectionId: string): number {
   // Check against known spam collections
   if (collectionId && SPAM_NFT_COLLECTIONS.includes(collectionId)) {
-    return 100;
+    return 100
   }
 
   // Check for suspicious names/content
-  const name = nft.name?.toLowerCase() || "";
-  const description = nft.json?.description?.toLowerCase() || "";
+  const name = nft.name?.toLowerCase() || ""
+  const description = nft.json?.description?.toLowerCase() || ""
 
   if (
     name.includes("airdrop") ||
@@ -99,7 +97,7 @@ export function checkSpamStatus(nft: any, collectionId: string): number {
     description.includes("claim your") ||
     description.includes("connect wallet")
   ) {
-    return 80; // Suspicious
+    return 80 // Suspicious
   }
 
   // Check explicit/adult content
@@ -108,10 +106,10 @@ export function checkSpamStatus(nft: any, collectionId: string): number {
     name.includes("sex") ||
     description.includes("nsfw")
   ) {
-    return 50; // Suspicious but not necessarily spam
+    return 50 // Suspicious but not necessarily spam
   }
 
-  return 0;
+  return 0
 }
 
 /**
@@ -119,20 +117,23 @@ export function checkSpamStatus(nft: any, collectionId: string): number {
  */
 export function getGroupName(nft: any, spamScore: number): string {
   if (spamScore === 100) {
-    return "Scam NFTS";
+    return "Scam NFTS"
   } else if (spamScore > 0) {
-    return "Unverified NFTS";
+    return "Unverified NFTS"
   } else if (nft.collection?.name) {
-    return nft.collection.name;
+    return nft.collection.name
   } else {
-    return nft.name;
+    return nft.name
   }
 }
 
 /**
  * Update scam group
  */
-export function updateScamGroup(collections: Map<string, NFTGroup>, nft: NFTItem): void {
+export function updateScamGroup(
+  collections: Map<string, NFTGroup>,
+  nft: NFTItem
+): void {
   if (!collections.has("scam")) {
     collections.set("scam", {
       id: "scam",
@@ -145,17 +146,20 @@ export function updateScamGroup(collections: Map<string, NFTGroup>, nft: NFTItem
       currencyFloor: { price: null, change: null, percentage: null },
       totalFloor: { price: null, change: null, percentage: null },
       currencyTotalFloor: { price: null, change: null, percentage: null }
-    });
+    })
   } else {
-    const group = collections.get("scam");
-    group.count++;
+    const group = collections.get("scam")
+    group.count++
   }
 }
 
 /**
  * Update suspicious group
  */
-export function updateSuspiciousGroup(collections: Map<string, NFTGroup>, nft: NFTItem): void {
+export function updateSuspiciousGroup(
+  collections: Map<string, NFTGroup>,
+  nft: NFTItem
+): void {
   if (!collections.has("suspicious")) {
     collections.set("suspicious", {
       id: "suspicious",
@@ -168,13 +172,13 @@ export function updateSuspiciousGroup(collections: Map<string, NFTGroup>, nft: N
       currencyFloor: { price: null, change: null, percentage: null },
       totalFloor: { price: null, change: null, percentage: null },
       currencyTotalFloor: { price: null, change: null, percentage: null }
-    });
+    })
   } else {
-    const group = collections.get("suspicious");
-    group.count++;
+    const group = collections.get("suspicious")
+    group.count++
     // Update image if current is null
     if (!group.image) {
-      group.image = nft.image;
+      group.image = nft.image
     }
   }
 }
@@ -191,14 +195,20 @@ export function updateCollection(
 ): void {
   if (!collections.has(collectionId)) {
     // Create new collection entry
-    const floor = marketplaceData.get(collectionId) || { price: null, change: null, percentage: null };
+    const floor = marketplaceData.get(collectionId) || {
+      price: null,
+      change: null,
+      percentage: null
+    }
 
     // Calculate currency floor if we have a floor price
-    const currencyFloor = floor.price ? {
-      price: floor.price * solPriceInfo.price,
-      change: floor.change ? floor.change * solPriceInfo.price : null,
-      percentage: floor.percentage
-    } : { price: null, change: null, percentage: null };
+    const currencyFloor = floor.price
+      ? {
+          price: floor.price * solPriceInfo.price,
+          change: floor.change ? floor.change * solPriceInfo.price : null,
+          percentage: floor.percentage
+        }
+      : { price: null, change: null, percentage: null }
 
     collections.set(collectionId, {
       id: collectionId,
@@ -209,39 +219,45 @@ export function updateCollection(
       listed: 0,
       floor: floor,
       currencyFloor: currencyFloor,
-      totalFloor: floor.price ? {
-        price: floor.price,
-        change: floor.change,
-        percentage: floor.percentage
-      } : { price: null, change: null, percentage: null },
+      totalFloor: floor.price
+        ? {
+            price: floor.price,
+            change: floor.change,
+            percentage: floor.percentage
+          }
+        : { price: null, change: null, percentage: null },
       currencyTotalFloor: currencyFloor
-    });
+    })
 
     // Update NFT with floor price
-    nft.floor = { ...floor };
-    nft.currencyFloor = { ...currencyFloor };
+    nft.floor = { ...floor }
+    nft.currencyFloor = { ...currencyFloor }
   } else {
     // Update existing collection
-    const collection = collections.get(collectionId);
-    collection.count++;
+    const collection = collections.get(collectionId)
+    collection.count++
 
     // Update NFT with collection floor price
-    nft.floor = { ...collection.floor };
-    nft.currencyFloor = { ...collection.currencyFloor };
+    nft.floor = { ...collection.floor }
+    nft.currencyFloor = { ...collection.currencyFloor }
 
     // Update total floor if floor price exists
     if (collection.floor.price) {
       collection.totalFloor = {
         price: collection.floor.price * collection.count,
-        change: collection.floor.change ? collection.floor.change * collection.count : null,
+        change: collection.floor.change
+          ? collection.floor.change * collection.count
+          : null,
         percentage: collection.floor.percentage
-      };
+      }
 
       collection.currencyTotalFloor = {
         price: collection.currencyFloor.price * collection.count,
-        change: collection.currencyFloor.change ? collection.currencyFloor.change * collection.count : null,
+        change: collection.currencyFloor.change
+          ? collection.currencyFloor.change * collection.count
+          : null,
         percentage: collection.currencyFloor.percentage
-      };
+      }
     }
   }
 }
@@ -256,7 +272,7 @@ export function updateSingle(
   solPriceInfo: PriceInfo
 ): void {
   // For singles, use a default floor price
-  const defaultFloor = 0.1; // Default floor price in SOL
+  const defaultFloor = 0.1 // Default floor price in SOL
 
   if (!singles.has(creatorId)) {
     // Create new single entry
@@ -264,13 +280,13 @@ export function updateSingle(
       price: defaultFloor,
       change: 0,
       percentage: null
-    };
+    }
 
     const currencyFloor = {
       price: defaultFloor * solPriceInfo.price,
       change: 0,
       percentage: 0
-    };
+    }
 
     singles.set(creatorId, {
       id: creatorId,
@@ -283,39 +299,42 @@ export function updateSingle(
       currencyFloor: currencyFloor,
       totalFloor: { ...floor },
       currencyTotalFloor: { ...currencyFloor }
-    });
+    })
 
     // Update NFT with floor price
-    nft.floor = { ...floor };
-    nft.currencyFloor = { ...currencyFloor };
+    nft.floor = { ...floor }
+    nft.currencyFloor = { ...currencyFloor }
   } else {
     // Update existing single
-    const single = singles.get(creatorId);
-    single.count++;
+    const single = singles.get(creatorId)
+    single.count++
 
     // Update NFT with single floor price
-    nft.floor = { ...single.floor };
-    nft.currencyFloor = { ...single.currencyFloor };
+    nft.floor = { ...single.floor }
+    nft.currencyFloor = { ...single.currencyFloor }
   }
 }
 
 /**
  * Calculate total floor values
  */
-export function calculateTotalFloorValues(response: NFTResponse, solPriceInfo: PriceInfo): void {
-  let totalFloor = 0;
+export function calculateTotalFloorValues(
+  response: NFTResponse,
+  solPriceInfo: PriceInfo
+): void {
+  let totalFloor = 0
 
   // Add up all collection floor values
   for (const group of response.groups) {
     if (group.totalFloor.price) {
-      totalFloor += group.totalFloor.price;
+      totalFloor += group.totalFloor.price
     }
   }
 
   // Add up all single NFT floor values
   for (const single of response.groupsSingles) {
     if (single.totalFloor.price) {
-      totalFloor += single.totalFloor.price;
+      totalFloor += single.totalFloor.price
     }
   }
 
@@ -324,13 +343,13 @@ export function calculateTotalFloorValues(response: NFTResponse, solPriceInfo: P
     price: totalFloor,
     change: 0,
     percentage: 0
-  };
+  }
 
   response.currencyTotalFloor = {
     price: totalFloor * solPriceInfo.price,
     change: 0,
     percentage: 0
-  };
+  }
 }
 
 export function createEmptyResponse(solPriceInfo: PriceInfo): NFTResponse {
@@ -342,7 +361,7 @@ export function createEmptyResponse(solPriceInfo: PriceInfo): NFTResponse {
     currencyTotalFloor: { price: 0, change: 0, percentage: 0 },
     groupsSingles: [],
     errors: []
-  };
+  }
 }
 
 export function createErrorResponse(error: any): NFTResponse {
@@ -354,11 +373,11 @@ export function createErrorResponse(error: any): NFTResponse {
       change: 0,
       usdPrice: get(solPrice) || 0,
       usdChange: 0,
-      currency: 'usd'
+      currency: "usd"
     },
     totalFloor: { price: 0, change: 0, percentage: 0 },
     currencyTotalFloor: { price: 0, change: 0, percentage: 0 },
     groupsSingles: [],
     errors: [error.message || "Unknown error fetching NFTs"]
-  };
+  }
 }

@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @import "flowbite/src/themes/default.css";
 @plugin "flowbite/plugin";
 @source "../node_modules/flowbite";
@@ -6,14 +6,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --color-primary-50: '#E6EAF4'; /* // Lighter shade of GEICO blue */
-    --color-primary-100: '#CCD5EA';  /* // Light */
-    --color-primary-200: '#99ABD5';  /* // Lighter mid-tone */
-    --color-primary-300: '#6682BF';  /* // Mid-tone */
-    --color-primary-400: '#3358AA';  /* // Slightly lighter than the base */
-    --color-primary-500: '#0056ff';  /* // Base POP INSURANCE blue #0F4293 */
-    --color-primary-600: '#0D377A';  /* // Darker mid-tone */
-    --color-primary-700: '#0B2D62';  /* // Dark */
-    --color-primary-800: '#09234B';  /* // Darker */
-    --color-primary-900: '#071933';  /* // Darkest shade */
+  --color-primary-50: "#E6EAF4"; /* // Lighter shade of GEICO blue */
+  --color-primary-100: "#CCD5EA"; /* // Light */
+  --color-primary-200: "#99ABD5"; /* // Lighter mid-tone */
+  --color-primary-300: "#6682BF"; /* // Mid-tone */
+  --color-primary-400: "#3358AA"; /* // Slightly lighter than the base */
+  --color-primary-500: "#0056ff"; /* // Base POP INSURANCE blue #0F4293 */
+  --color-primary-600: "#0D377A"; /* // Darker mid-tone */
+  --color-primary-700: "#0B2D62"; /* // Dark */
+  --color-primary-800: "#09234B"; /* // Darker */
+  --color-primary-900: "#071933"; /* // Darkest shade */
 }

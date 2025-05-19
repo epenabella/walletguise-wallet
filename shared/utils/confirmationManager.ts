@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Storage } from "@plasmohq/storage"
-import { writable } from "svelte/store"
 import { Transaction, TransactionInstruction } from "@solana/web3.js"
+import { writable } from "svelte/store"
+
+import { Storage } from "@plasmohq/storage"
+
 import { sleep } from "~shared/utils/misc"
 
 // ------------------------------------------------------------------
@@ -12,7 +14,7 @@ export type WalletStandardConfirmationRequestType =
   | "signTransaction"
   | "signAndSend"
   | "custom"
-  | "signIn"// future‑proof
+  | "signIn" // future‑proof
 
 export type RequestStatus = "pending" | "approved" | "rejected" | "expired"
 
@@ -119,7 +121,9 @@ export async function updateRequestStatus(
  * Wait until the given request is approved OR rejected OR expired.
  * Resolves with the *final* request object, or throws on rejection / timeout.
  */
-export function waitForRequestResolution(id: string): Promise<ConfirmationRequest> {
+export function waitForRequestResolution(
+  id: string
+): Promise<ConfirmationRequest> {
   return new Promise<ConfirmationRequest>((resolve, reject) => {
     const timeoutId = setTimeout(async () => {
       await updateRequestStatus(id, "expired")
@@ -137,7 +141,7 @@ export function waitForRequestResolution(id: string): Promise<ConfirmationReques
         let newValue = changes[REQUESTS_KEY].newValue
 
         // Parse if it's a string (might be JSON)
-        if (typeof newValue === 'string') {
+        if (typeof newValue === "string") {
           try {
             newValue = JSON.parse(newValue)
           } catch (e) {
@@ -147,7 +151,7 @@ export function waitForRequestResolution(id: string): Promise<ConfirmationReques
         }
 
         // Ensure we have a valid object
-        if (!newValue || typeof newValue !== 'object') {
+        if (!newValue || typeof newValue !== "object") {
           console.error("Storage value is not an object:", newValue)
           return
         }
@@ -199,7 +203,10 @@ export function initBackgroundConfirmationListeners(): void {
         (req.status === "pending" && now - req.timestamp >= REQUEST_TIMEOUT) ||
         (req.status !== "pending" && now - req.timestamp > 86_400_000) // 24h
       ) {
-        map[id] = { ...req, status: req.status === "pending" ? "expired" : req.status }
+        map[id] = {
+          ...req,
+          status: req.status === "pending" ? "expired" : req.status
+        }
         mutated = true
       }
     }
@@ -215,7 +222,7 @@ export function initBackgroundConfirmationListeners(): void {
       let newValue = changes[REQUESTS_KEY].newValue
 
       // Parse if it's a string
-      if (typeof newValue === 'string') {
+      if (typeof newValue === "string") {
         try {
           newValue = JSON.parse(newValue)
         } catch (e) {
@@ -224,15 +231,13 @@ export function initBackgroundConfirmationListeners(): void {
         }
       }
 
-      if (!newValue || typeof newValue !== 'object') {
+      if (!newValue || typeof newValue !== "object") {
         console.error("keepAlive storage value is not an object:", newValue)
         return
       }
 
       const map = newValue as RequestMap
-      refreshKeepAlive(
-        Object.values(map).some((r) => r.status === "pending")
-      )
+      refreshKeepAlive(Object.values(map).some((r) => r.status === "pending"))
     } catch (error) {
       console.error("Error refreshing keep-alive:", error)
     }
@@ -241,7 +246,9 @@ export function initBackgroundConfirmationListeners(): void {
 
 export function initPopupRequestConfirmationListeners(): void {
   // initial
-  getRequestMap().then((map) => currentRequestStore.set(extractNextPending(map)))
+  getRequestMap().then((map) =>
+    currentRequestStore.set(extractNextPending(map))
+  )
 
   // reactive
   chrome.storage.onChanged.addListener((changes, area) => {
@@ -251,7 +258,7 @@ export function initPopupRequestConfirmationListeners(): void {
       let newValue = changes[REQUESTS_KEY].newValue
 
       // Parse if it's a string
-      if (typeof newValue === 'string') {
+      if (typeof newValue === "string") {
         try {
           newValue = JSON.parse(newValue)
         } catch (e) {
@@ -260,20 +267,19 @@ export function initPopupRequestConfirmationListeners(): void {
         }
       }
 
-      if (!newValue || typeof newValue !== 'object') {
+      if (!newValue || typeof newValue !== "object") {
         console.error("popup storage value is not an object:", newValue)
         return
       }
 
       const map = newValue as RequestMap
 
-      const next = extractNextPending(map);
-      currentRequestStore.set(null);
+      const next = extractNextPending(map)
+      currentRequestStore.set(null)
 
       if (next) {
-        sleep(100).then(() => currentRequestStore.set(next));
+        sleep(100).then(() => currentRequestStore.set(next))
       }
-
     } catch (error) {
       console.error("Error updating current request store:", error)
     }
@@ -299,12 +305,15 @@ export async function rejectRequest(id: string) {
 function extractProgramIds(payload: any): string[] | undefined {
   try {
     if (payload && "transaction" in payload) {
-      const tx = (payload.transaction as Transaction) ?? Transaction.from(payload.tx)
+      const tx =
+        (payload.transaction as Transaction) ?? Transaction.from(payload.tx)
       return [...new Set(tx.instructions.map((ix) => ix.programId.toBase58()))]
     } else if (payload && payload.tx) {
       try {
         const tx = Transaction.from(payload.tx)
-        return [...new Set(tx.instructions.map((ix) => ix.programId.toBase58()))]
+        return [
+          ...new Set(tx.instructions.map((ix) => ix.programId.toBase58()))
+        ]
       } catch {
         // Ignore transaction parsing errors
       }
@@ -318,9 +327,9 @@ function extractProgramIds(payload: any): string[] | undefined {
 export async function rejectAllRequests(): Promise<number> {
   try {
     // Get all current requests
-    const map = await getRequestMap();
-    let rejectedCount = 0;
-    let mutated = false;
+    const map = await getRequestMap()
+    let rejectedCount = 0
+    let mutated = false
 
     // Find and reject all pending requests
     for (const [id, req] of Object.entries(map)) {
@@ -329,24 +338,26 @@ export async function rejectAllRequests(): Promise<number> {
           ...req,
           status: "rejected",
           response: { error: "Rejected due to network change" }
-        };
-        rejectedCount++;
-        mutated = true;
+        }
+        rejectedCount++
+        mutated = true
       }
     }
 
     // Save the updated request map if any changes were made
     if (mutated) {
-      await putRequestMap(map);
+      await putRequestMap(map)
     }
 
     // Reset the current request store
-    currentRequestStore.set(null);
+    currentRequestStore.set(null)
 
-    console.log(`Rejected ${rejectedCount} pending requests due to network change`);
-    return rejectedCount;
+    console.log(
+      `Rejected ${rejectedCount} pending requests due to network change`
+    )
+    return rejectedCount
   } catch (error) {
-    console.error("Error rejecting all requests:", error);
-    throw error;
+    console.error("Error rejecting all requests:", error)
+    throw error
   }
 }

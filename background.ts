@@ -1,18 +1,19 @@
-import { ed25519 } from "@noble/curves/ed25519";
-import { type Cluster, Connection, Keypair, Transaction } from "@solana/web3.js"
-import bs58 from "bs58";
-import { get } from "svelte/store";
-import { Storage } from "@plasmohq/storage";
-import {maybeCreateRefillIx} from "@wallet-guise/core"
+import { ed25519 } from "@noble/curves/ed25519"
+import { Connection, Keypair, Transaction, type Cluster } from "@solana/web3.js"
+import { maybeCreateRefillIx } from "@wallet-guise/core"
+import bs58 from "bs58"
+import { get } from "svelte/store"
+
+import { Storage } from "@plasmohq/storage"
 
 import {
-  type WalletStandardConfirmationRequestType,
   createConfirmationRequest,
   initBackgroundConfirmationListeners,
-  waitForRequestResolution
+  waitForRequestResolution,
+  type WalletStandardConfirmationRequestType
 } from "~shared/utils/confirmationManager"
 import { getClientPublicKey, STORAGE_KEYS } from "~shared/utils/constants"
-import { decrypt, sha256 } from "~shared/utils/crypto";
+import { decrypt, sha256 } from "~shared/utils/crypto"
 import {
   clusterStore,
   clusterUrlMapper,
@@ -20,9 +21,8 @@ import {
   rpcUrl,
   waitForClusterInitialization
 } from "~shared/utils/networkStore"
-import { wgLocalSecureStore } from "~shared/utils/wgAppStore";
 import { parseTransactionForDisplay } from "~shared/utils/transaction"
-
+import { wgLocalSecureStore } from "~shared/utils/wgAppStore"
 
 // RAM-only store
 // const sessionSecureStorage = new SecureStorage({area: 'session'}) //sess.Storage({ area: "session" }) // survives SW restarts
@@ -31,22 +31,21 @@ const sessionStorage = new Storage({ area: "session" })
 
 let sessionWallet: Keypair | null = null
 
-initBackgroundConfirmationListeners();
-let popupPort: chrome.runtime.Port | null = null;
+initBackgroundConfirmationListeners()
+let popupPort: chrome.runtime.Port | null = null
 chrome.runtime.onConnect.addListener((port) => {
-  if (port.name === 'popup') {
-    popupPort = port;
+  if (port.name === "popup") {
+    popupPort = port
 
     // Listen for popup disconnection
     port.onDisconnect.addListener(() => {
-      popupPort = null;
-    });
+      popupPort = null
+    })
   }
-});
-
+})
 
 function isPopupOpen(): boolean {
-  return popupPort !== null;
+  return popupPort !== null
 }
 
 async function restoreSession() {
@@ -56,7 +55,7 @@ async function restoreSession() {
     // Get the encrypted wallet from secure storage
     const secretKeyBase58 = await sessionStorage.get<string>(SESSION_KEY)
 
-    console.log("secretKeyBase58", secretKeyBase58);
+    console.log("secretKeyBase58", secretKeyBase58)
 
     if (secretKeyBase58) {
       sessionWallet = Keypair.fromSecretKey(bs58.decode(secretKeyBase58))
@@ -88,8 +87,6 @@ async function openExtensionPopup() {
     })
   }
 }
-
-
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   ;(async () => {
@@ -164,8 +161,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
       case "walletguise#setNetworkFromWallet": {
         try {
-          await chrome.storage.local.set({ [STORAGE_KEYS.CLUSTER]: msg.cluster });
-          sendResponse({ ok: true });
+          await chrome.storage.local.set({
+            [STORAGE_KEYS.CLUSTER]: msg.cluster
+          })
+          sendResponse({ ok: true })
         } catch (error) {
           console.error("Message signing failed:", error)
           sendResponse({ error: error.message })
@@ -189,8 +188,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
           if (msg?.specificType) {
             await userConfirmation(msg, sender, msg.specificType)
-          }
-          else {
+          } else {
             await userConfirmation(msg, sender, "signMessage")
           }
 
@@ -251,15 +249,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
         console.log(`type of msg.tx: ${typeof msg.tx}`, msg.tx)
 
-
         try {
           const tx = Transaction.from(Buffer.from(msg.tx))
-
 
           // const tInfo = parseTransactionForDisplay(tx);
 
           // console.log(`background signAndSend tInfo: `, tInfo);
-
 
           // Validate fee payer
           if (!tx.feePayer?.equals(sessionWallet.publicKey)) {
@@ -271,35 +266,36 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             return sendResponse({ error: "Missing recent blockhash" })
           }
 
-
           console.log("tx pre partial sign: ", tx)
 
           // Keypair.generate() - if not found will have no rent extension
 
           // add refill instruction (aka tunnel instruction
 
-          const res = await chrome.storage.local.get([STORAGE_KEYS.CLUSTER]);
-          const cluster:Cluster = res[STORAGE_KEYS.CLUSTER] ?? 'mainnet-beta';
-          const conn = new Connection(clusterUrlMapper(cluster));
+          const res = await chrome.storage.local.get([STORAGE_KEYS.CLUSTER])
+          const cluster: Cluster = res[STORAGE_KEYS.CLUSTER] ?? "mainnet-beta"
+          const conn = new Connection(clusterUrlMapper(cluster))
 
+          console.log(`res: ${res}, clus: ${cluster}`)
 
-          console.log(`res: ${res}, clus: ${cluster}`);
-
-          const maybeRefillIx = await maybeCreateRefillIx(sessionWallet.publicKey, getClientPublicKey(cluster), conn)
+          const maybeRefillIx = await maybeCreateRefillIx(
+            sessionWallet.publicKey,
+            getClientPublicKey(cluster),
+            conn
+          )
           tx.add(maybeRefillIx)
 
           // Partially sign the transaction
           tx.partialSign(sessionWallet)
 
-          const details = parseTransactionForDisplay(tx);
+          const details = parseTransactionForDisplay(tx)
           console.log(`details: ${JSON.stringify(details)}`)
 
-          await waitForClusterInitialization;
+          await waitForClusterInitialization
 
           await userConfirmation(msg, sender, "signAndSend")
 
-          console.log('transaction: ', tx);
-
+          console.log("transaction: ", tx)
 
           const serializedTx = tx.serialize()
 
@@ -311,10 +307,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
           // Confirm if commitment is requested
           if (msg.options?.commitment) {
-            await conn.confirmTransaction(
-              signature,
-              msg.options.commitment
-            )
+            await conn.confirmTransaction(signature, msg.options.commitment)
           }
 
           // Return the raw signature bytes
@@ -342,26 +335,35 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
       case "walletguise#deleteKeys": {
         try {
-          await wgLocalSecureStore.clear();                           // ENC_WALLET / HASH
-          await sessionStorage.clear();
-          await chrome.storage.local.remove([STORAGE_KEYS.HASH, STORAGE_KEYS.ENC_WALLET]);
-          sessionWallet = null;
+          await wgLocalSecureStore.clear() // ENC_WALLET / HASH
+          await sessionStorage.clear()
+          await chrome.storage.local.remove([
+            STORAGE_KEYS.HASH,
+            STORAGE_KEYS.ENC_WALLET
+          ])
+          sessionWallet = null
 
-          chrome.runtime.sendMessage({ type: "walletguise#disconnect" }).catch(() => {});
+          chrome.runtime
+            .sendMessage({ type: "walletguise#disconnect" })
+            .catch(() => {})
 
-          sendResponse({ ok: true });
+          sendResponse({ ok: true })
         } catch (err) {
-          console.error("deleteKeys failed", err);
-          sendResponse({ error: String(err) });
+          console.error("deleteKeys failed", err)
+          sendResponse({ error: String(err) })
         }
-        break;
+        break
       }
     }
   })()
   return true
 })
 
-async function userConfirmation(msg, sender, type: WalletStandardConfirmationRequestType) {
+async function userConfirmation(
+  msg,
+  sender,
+  type: WalletStandardConfirmationRequestType
+) {
   const requestId = await createConfirmationRequest(
     type,
     { message: msg.message, account: msg.account, tx: msg.tx },
