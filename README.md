@@ -4,7 +4,7 @@ A [Wallet Standard](https://github.com/wallet-standard/wallet-standard) secure c
 
 ## 🎯 Unique Value Proposition
 
-**First-of-its-kind Solana wallet that converts puzzle-solving into funded wallets**
+**First-of-its-kind Solana wallet that converts puzzle-solving into auto-refilled - pre-funded wallets**
 
 ### Why This Matters
 
