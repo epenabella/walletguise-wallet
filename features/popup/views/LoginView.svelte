@@ -12,8 +12,6 @@
   import MnemonicModal from "~shared/components/sub-views/MnemonicModal.svelte"
   import {LOADING_MESSAGES} from "~shared/utils/constants";
   import { sleep } from "~shared/utils/misc"
-  import coin from "~assets/coin.gif"
-  import wallet from "~assets/wallet.gif"
 
   const dispatch = createEventDispatcher();
 

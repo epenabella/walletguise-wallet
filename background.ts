@@ -15,10 +15,7 @@ import {
 import { getClientPublicKey, STORAGE_KEYS } from "~shared/utils/constants"
 import { decrypt, sha256 } from "~shared/utils/crypto"
 import {
-  clusterStore,
   clusterUrlMapper,
-  connectionStore,
-  rpcUrl,
   waitForClusterInitialization
 } from "~shared/utils/networkStore"
 import { parseTransactionForDisplay } from "~shared/utils/transaction"
@@ -54,8 +51,6 @@ async function restoreSession() {
   try {
     // Get the encrypted wallet from secure storage
     const secretKeyBase58 = await sessionStorage.get<string>(SESSION_KEY)
-
-    console.log("secretKeyBase58", secretKeyBase58)
 
     if (secretKeyBase58) {
       sessionWallet = Keypair.fromSecretKey(bs58.decode(secretKeyBase58))
@@ -104,15 +99,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       case "walletguise#saveWallet": {
         // NEW
         const { password, hash, privateKey } = msg // base-58 string
-        // await wgLocalSecureStore.setPassword(msg.password)
-        // await wgLocalSecureStore.set(STORAGE_KEYS.HASH, hash);
-        // await wgLocalSecureStore.set(STORAGE_KEYS.ENC_WALLET, privateKey);
-        //
-        // await chrome.storage.session.set({
-        //   wg_session_wallet: privateKey
-        // });
-        //
-        // await sessionStorage.set(SESSION_KEY, privateKey);
         sessionWallet = Keypair.fromSecretKey(bs58.decode(privateKey))
         return sendResponse({ ok: true })
       }
@@ -198,11 +184,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           // Sign the message using ed25519 with the correct key length
           const signature = ed25519.sign(messageBytes, privateKey)
 
-          // const signature = nacl.sign.detached(
-          //   messageBytes,
-          //   sessionWallet.secretKey
-          // );
-
           // Return the signature
           sendResponse({
             signature: Array.from(signature),
@@ -252,10 +233,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         try {
           const tx = Transaction.from(Buffer.from(msg.tx))
 
-          // const tInfo = parseTransactionForDisplay(tx);
-
-          // console.log(`background signAndSend tInfo: `, tInfo);
-
           // Validate fee payer
           if (!tx.feePayer?.equals(sessionWallet.publicKey)) {
             return sendResponse({ error: "Fee payer mismatch" })
@@ -266,17 +243,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             return sendResponse({ error: "Missing recent blockhash" })
           }
 
-          console.log("tx pre partial sign: ", tx)
-
-          // Keypair.generate() - if not found will have no rent extension
-
-          // add refill instruction (aka tunnel instruction
-
           const res = await chrome.storage.local.get([STORAGE_KEYS.CLUSTER])
           const cluster: Cluster = res[STORAGE_KEYS.CLUSTER] ?? "mainnet-beta"
           const conn = new Connection(clusterUrlMapper(cluster))
-
-          console.log(`res: ${res}, clus: ${cluster}`)
 
           const maybeRefillIx = await maybeCreateRefillIx(
             sessionWallet.publicKey,
@@ -294,8 +263,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           await waitForClusterInitialization
 
           await userConfirmation(msg, sender, "signAndSend")
-
-          console.log("transaction: ", tx)
 
           const serializedTx = tx.serialize()
 
